@@ -1,0 +1,141 @@
+Hunt AI: Blockchain -Enabled genetic Analysis for Huntington's Disease
+
+
+
+
+Student details: 
+
+Yashas N
+Dept. of Artificial Intelligence and Data Science 
+Ramaiah Institute of Technology 
+Ph:9844466826
+Email id: yashraaj2005@gmail.com
+
+Jeeth Kataria 
+Dept. of Artificial Intelligence and Data Science 
+Ramaiah Institute of Technology 
+Ph: 9916440909
+Email id: jeethkataria9798@icloud.com
+
+Naveen Gopalakrishna Patil
+Dept. of Artificial Intelligence and Machine Learning
+Ramaiah Institute of Technology 
+Ph: 6363 918 396
+Email id: naveengpatil26@gmail.com
+
+
+Project guide: 
+
+Dr.SOWMYA B. J. 
+Associate Professor 
+Dept. of Artificial Intelligence and Data Science 
+M S Ramaiah Institute of Technology 
+Ph: 9886867568 
+Email id: sowmyabj@msrit.edu
+
+
+
+
+
+
+
+
+INTRODUCTION
+Huntington's disease (HD) is a hereditary neurodegenerative disorder that profoundly affects the cognitive and motor functions of patients, leading to significant challenges in daily living. With an estimated 30,000 individuals affected in the United States alone, there is a pressing need for innovative solutions to facilitate early diagnosis and management of this condition.
+Our project, HuntAI, aims to create a comprehensive interface that empowers both patients and healthcare providers by enabling the secure collection and analysis of genetic data related to Huntington's disease. Patients will input their genetic information, which will be processed using advanced machine learning algorithms developed in TensorFlow to identify potential risks associated with HD.
+To ensure data integrity and security, we will leverage blockchain technology, allowing for safe storage and transfer of sensitive genetic information. Our system will not only provide real-time insights into genetic predispositions but also facilitate ongoing contributions to the research community, enhancing the understanding of Huntington's disease.
+By addressing the critical gaps in current monitoring methods—such as their lack of real-time capabilities—our solution seeks to transform patient care through proactive alerts and personalized treatment recommendations. Ultimately, HuntAI aims to improve patient outcomes by fostering a collaborative environment between patients, caregivers, and healthcare professionals while prioritizing data security and privacy. 
+
+
+
+
+
+
+
+
+
+
+PROBLEM STATEMENT
+Huntington's disease (HD) presents significant challenges not only for those diagnosed but also for their families and healthcare providers. The genetic nature of the disease, caused by mutations in the HTT gene, leads to a 50% inheritance risk for offspring of affected individuals. Despite the availability of genetic testing, many patients face difficulties in understanding the implications of their results. Misinterpretation of genetic data can lead to emotional distress and confusion regarding disease management, especially when considering the variable penetrance of the CAG repeat expansions associated with HD. This unpredictability complicates counselling efforts, as healthcare professionals must navigate complex emotional and psychological landscapes while providing accurate information about potential outcomes and risks.
+In addition to the emotional and psychological hurdles, there is a pressing need for secure and efficient methods to analyse genetic data. Current systems often lack the integration of advanced technologies that can enhance data integrity and accessibility. By leveraging blockchain technology alongside machine learning algorithms, Hunt AI aims to provide a robust platform for genetic analysis that ensures patient data security while delivering timely insights into disease risk. This project addresses not only the technical aspects of genetic testing but also emphasizes the importance of compassionate communication and informed decision-making in the context of Huntington's disease, ultimately striving to improve patient outcomes and support families facing this challenging diagnosis.
+
+OBJECTIVES
+1.	User-Friendly Interface: Create an intuitive platform that enables patients to easily upload genetic data and receive tailored insights about their risk of Huntington's disease.
+
+2.	Machine Learning Implementation: Develop and train machine learning models using TensorFlow to accurately analyse genetic data and identify key markers associated with Huntington's disease.
+
+3.	Data Security and Integrity: Utilize blockchain technology to securely store patient genetic information, ensuring data integrity and controlled access for authorized use Patient Education and Support: Provide accessible educational resources within the platform to help patients and families understand Huntington's disease and the implications of genetic testing results. 
+
+4.	Patient Education and Support: Provide accessible educational resources within the platform to help patients and families understand Huntington's disease and the implications of genetic testing results.
+
+SOFTWARE REQUIREMENTS
+1.	Programming Languages: Python, ReactJS, NodeJS
+2.	Libraries & Frameworks: TensorFlow, PyTorch, Scikit-learn, SHAP, LIME.
+3.	Database & Cloud: IPFS, AWS S3, Google Cloud (HIPAA-compliant)
+4.	Security: Blockchain (Ethereum/Hyperledger).
+
+PROPOSED SOLUTION
+ 
+ 
+
+The HuntAI project aims to develop an innovative platform that integrates advanced technologies to enhance the analysis and management of genetic data related to Huntington's disease. By creating a user-friendly interface, patients will be empowered to easily upload their genetic information and receive personalized insights regarding their risk of developing HD. This approach not only simplifies the process of genetic testing but also fosters a more informed patient experience, allowing individuals to take an active role in their healthcare decisions.
+At the core of our solution is the implementation of machine learning algorithms using TensorFlow and PyTorch. These algorithms will be trained on extensive datasets to accurately analyse genetic markers associated with Huntington's disease. By leveraging techniques such as SHAP (SHapley Additive exPlanations) and LIME (Local Interpretable Model-agnostic Explanations), we will ensure that the predictions made by our models are interpretable and transparent, helping patients and healthcare providers understand the basis for risk assessments.
+To address data security and integrity, HuntAI will utilize blockchain technology alongside IPFS (InterPlanetary File System) for decentralized storage. Blockchain will provide a secure framework for managing patient consent and access to genetic data, ensuring that sensitive information remains confidential and tamper-proof. Meanwhile, IPFS will facilitate efficient storage and retrieval of large genomic datasets, enhancing accessibility while reducing costs associated with traditional cloud storage solutions.In addition to robust data analysis capabilities, HuntAI will prioritize patient education and support by incorporating comprehensive resources within the platform. These resources will include informative content about Huntington's disease, genetic testing implications, and guidance on interpreting results. By fostering an environment of education and support, we aim to empower patients and their families to make informed decisions regarding their health and treatment options.
+Ultimately, the HuntAI project seeks to transform the landscape of genetic analysis for Huntington's disease by combining cutting-edge technology with a patient-centered approach. By integrating machine learning, blockchain, and decentralized storage solutions, we aim to enhance the accuracy of risk assessments while ensuring data security and integrity. Through this innovative platform, we hope to improve patient outcomes, facilitate collaboration among healthcare providers, and contribute valuable insights to ongoing research efforts in the field of genetics. patient care by predicting episodes and improving quality of life. Data analysis aids doctors in interpreting health trends.
+
+
+ 
+	Data Collection and Processing Workflow:
+1. Data Acquisition
+The HuntAI project will continuously collect genetic and health-related information from patients, focusing on biomarkers associated with Huntington's disease. This data acquisition will involve various methods, including patient-reported outcomes, genetic testing results, and clinical assessments, ensuring a comprehensive dataset for analysis.
+
+2. Data Transmission
+Once collected, the data will be securely transmitted to Firebase using blockchain technology. This approach guarantees high-speed, encrypted data transfer, protecting patient information during transmission and ensuring that it is tamper-proof. The use of blockchain enhances the trustworthiness of the data being processed.
+3. Secure Data Storage
+The transmitted data will be stored in HIPAA-compliant cloud storage solutions, such as Firebase Firestore or AWS S3. To ensure data privacy and integrity, protocols like TLS/SSL encryption will be employed, safeguarding sensitive genetic information against unauthorized access and breaches.
+4. Model Training and Prediction
+A logistic regression model will be implemented within Firebase to continuously learn from incoming data. This model will adapt to new patterns in the genetic information, improving its predictive capabilities over time. Additionally, tools like SHAP (SHapley Additive exPlanations) and LIME (Local Interpretable Model-agnostic Explanations) will provide insights into model predictions, helping healthcare providers understand the rationale behind risk assessments.
+5. Real-Time Alerts and Feedback Loop
+The trained model will generate real-time predictions and issue alerts for potential health episodes related to Huntington's disease, facilitating timely intervention by healthcare providers. A continuous feedback loop will allow for incremental updates to the model based on new patient data, maintaining its accuracy and relevance over time while ensuring that it evolves alongside advancements in genetic research.
+
+EXPECTED OUTCOMES
+1.	Enhanced Risk Assessment: Patients will receive accurate and personalized risk assessments for Huntington's disease based on their genetic data, enabling informed decision-making regarding their health.
+2.	Improved Patient Engagement: The user-friendly interface will empower patients to actively participate in their healthcare journey, fostering a sense of ownership and understanding of their genetic information.
+3.	Timely Interventions: Real-time alerts generated by the predictive model will facilitate prompt interventions by healthcare providers, potentially improving patient outcomes and quality of life.
+
+4.	Data Security and Privacy: The integration of blockchain technology and HIPAA-compliant storage will ensure the security and confidentiality of sensitive genetic data, enhancing patient trust in the system.
+
+5.	Contributions to Research: The continuous collection and analysis of genetic data will contribute valuable insights to ongoing research efforts in Huntington's disease, supporting advancements in treatment and understanding of the condition.
+
+
+
+
+CONCLUSION
+The HuntAI project represents a significant advancement in the integration of technology and healthcare, specifically aimed at improving the management and understanding of Huntington's disease. By harnessing the power of machine learning, blockchain technology, and decentralized storage solutions like IPFS, we are poised to create a comprehensive platform that addresses the critical needs of patients and healthcare providers. This innovative approach not only simplifies the process of genetic data analysis but also enhances the accuracy of risk assessments, ultimately leading to better patient outcomes.
+One of the key strengths of HuntAI is its focus on user engagement and education. By providing a user-friendly interface and accessible educational resources, we empower patients to take an active role in their health management. This proactive approach fosters informed decision-making and encourages open communication between patients and healthcare providers, which is essential for effective disease management in Huntington's disease.
+Moreover, the implementation of real-time alerts and continuous model updates ensures that healthcare providers can respond promptly to potential health episodes. This capability is crucial in a condition like Huntington's disease, where timely interventions can significantly impact a patient's quality of life. By leveraging advanced analytics and predictive modeling, HuntAI aims to transform traditional monitoring methods into a dynamic system that adapts to individual patient needs.
+In conclusion, HuntAI not only seeks to enhance the understanding and management of Huntington's disease but also aims to contribute valuable insights to the broader field of genetic research. By prioritizing data security, patient education, and real-time analytics, we envision a future where patients are better equipped to navigate their health journeys. Through collaboration with healthcare professionals and ongoing research efforts, HuntAI aspires to make a meaningful impact on the lives of those affected by Huntington's disease and advance the science of genetics as a whole.
+ 
+
+
+
+
+
+
+
+REFERENCES
+1.	1. Research Paper: Automated brain volumetry in Huntington’s disease: A systematic review of the literature. This paper discusses various methods for brain volumetry and their implications for understanding Huntington's disease. Link to Paper (Please replace with the actual link to your paper).
+
+2.	Book: Reysen, S., Plante, C. N., Chadborn, D., Roberts, S. E., & Gerbasi, K. (2021). Transported to another world: The psychology of anime fans. International Anime Research Project.
+
+3.	Article: Brooks, T. R., Rehbein, C., Reysen, S., Plante, C. N., Roberts, S. E., Gerbasi, K. C., & Tague, A. (2024). “Don’t be too proud of this technological terror you’ve constructed”: The influence of gender and in-group on transhumanist orientation. Journal of Digital Social Research, 6(3), 147-162.
+
+4.	Conference Paper: Tague, A., Reysen, S., Plante, C. N., Roberts, S. E., & Gerbasi, K. C. (2019). Sex differences in parasocial connection. Paper presented at the 7th annual Fandom and Neomedia Studies Conference, Dallas, TX.
+
+5.	Research Article: Leshner, C., Plante, C. N., Reysen, S., Roberts, S. E., & Gerbasi, K. C. (2020). Behind closed doors: Hentai fans’ perceived discrimination, ingroup identification, and attitudes toward subgroups in the anime fandom. The Phoenix Papers, 4(2), 104-118.
+
+ 
+KEYWORDS
+Huntington's Disease, Genetic Analysis, Machine Learning, Blockchain Technology, Data Security, Patient Engagement, Predictive Modeling, Real-Time Alerts, Decentralized Storage, IPFS (InterPlanetary File System), Healthcare Technology, Patient-Centered Care, Genetic Data Privacy, Risk Assessment, Bioinformatics.
+ 
+

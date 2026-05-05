@@ -1,0 +1,496 @@
+Comprehensive Analysis of Active 
+Mechanical Excitation Devices: Market 
+Landscape, Physics, and Strategic 
+Validation for New Diagnostic Modalities 
+1. Executive Introduction: The Paradigm Shift to 
+Functional Mechanics 
+The landscape of medical diagnostics is undergoing a fundamental transformation, shifting from 
+static imaging to dynamic functional characterization. While traditional modalities such as X-ray, 
+Computed Tomography (CT), and Magnetic Resonance Imaging (MRI) excel at visualizing 
+anatomical structure, they often fail to capture the mechanical properties of tissue—stiffness, 
+elasticity, tone, and resonance—which are frequently the earliest biomarkers of pathology. The 
+user’s proposal to develop a device based on Active Mechanical Excitation (AME) sits at the 
+forefront of this shift, leveraging the principle that a physical system’s response to a mechanical 
+impulse reveals its intrinsic health status. 
+This report provides an exhaustive analysis of the current commercial and research landscape 
+for devices operating on similar principles. By examining established technologies like 
+MyotonPRO, Osstell ISQ, and FibroScan, alongside emerging solutions for fracture and 
+ascites detection, we validate the scientific feasibility and market viability of the proposed 
+device. The analysis distinguishes between passive diagnostics (which listen to internal sounds, 
+like a stethoscope) and active diagnostics (which inject energy to elicit a response), confirming 
+that the latter offers superior quantification and objectivity. 
+The report identifies a critical "missing middle" in the market: while specialized devices exist for 
+liver fibrosis and dental implants, there is a distinct lack of a general-purpose, handheld 
+mechanical diagnostic tool for point-of-care assessment of abdominal pathology (ascites, 
+pneumothorax) and long-bone integrity. This gap represents a significant strategic opportunity 
+for the proposed device. 
+1.1 Principles of Active Mechanical Excitation 
+To understand the competitive landscape, it is essential to define the physics governing these 
+devices. Unlike passive auscultation, AME devices treat biological tissue as a complex 
+mechanical system defined by mass, stiffness, and damping. 
+1.1.1 The Mass-Spring-Damper Model 
+Most devices in this category model tissue response using the Kelvin-Voigt model of 
+viscoelasticity. When a mechanical impulse (a tap or vibration) is applied to tissue, the tissue 
+resists deformation through stiffness (acting like a spring) and dissipates energy through 
+viscosity (acting like a hydraulic damper). 
+● Stiffness (k): Correlates with fibrosis in livers or contraction in muscles. 
+● Damping (c): Correlates with fluid content (edema) or tissue composition. 
+● Mass (m): Correlates with the volume of tissue being mobilized. 
+1.1.2 Resonance Frequency Analysis (RFA) 
+RFA relies on the phenomenon where an object vibrates at a specific "natural frequency" 
+determined by its stiffness and boundary conditions. In medical applications, a stiffer interface 
+(e.g., a well-healed bone fracture or a solid dental implant) yields a higher resonance frequency. 
+This principle allows for the non-invasive assessment of structural integrity without radiation. 
+1.1.3 Shear Wave Propagation 
+Used in elastography, this method generates a transverse wave (ripple) through the tissue. The 
+speed of this wave (V_s) is directly related to the shear modulus (G) of the tissue, where \mu = 
+\rho V_s^2. Stiffer tissues propagate waves faster. This principle has revolutionized hepatology 
+by replacing biopsies. 
+2. The Soft Tissue Specialist: MyotonPRO and Digital 
+Palpation 
+The MyotonPRO (Myoton AS) represents the most direct analog to a handheld 
+general-purpose mechanical diagnostic tool, though its current commercial indication is 
+restricted to superficial muscles and tendons. It serves as a primary proof-of-concept for the 
+user’s proposal regarding the digitization of manual palpation. 
+2.1 Operating Principle: The Mechanical Impulse 
+The MyotonPRO operates on the principle of Digital Palpation or the Mechanical Dynamic 
+Response method. Unlike manual palpation, which is subjective and dependent on the 
+physician's tactile sensitivity, MyotonPRO delivers a standardized mechanical impulse to the 
+skin surface. 
+● Mechanism: The device probe pre-compresses the subcutaneous tissue (Preload: 0.18 
+N) to ensure good contact. It then releases a short mechanical impulse (Force: 0.4 N; 
+Duration: 15 ms). 
+● Sensing: An accelerometer detects the subsequent damped oscillation of the tissue. 
+● Data Processing: The device performs a Fast Fourier Transform (FFT) on the 
+acceleration signal to derive viscoelastic parameters. 
+2.2 Calculated Parameters and Clinical Significance 
+The device provides a multi-parametric readout, a feature that the user’s proposed device 
+should emulate to maximize clinical utility. 
+Parameter 
+Symbol 
+Oscillation 
+Frequency 
+F 
+Unit 
+Hz 
+Physical Meaning Clinical Relevance 
+Natural frequency 
+of the tissue. 
+Indicates Muscle 
+Tone (resting 
+tension). High tone 
+Parameter Symbol Unit Physical Meaning Clinical Relevance 
+correlates with 
+hypertonia or 
+overtraining. 
+Dynamic 
+Stiffness 
+S 
+N/m 
+Resistance to 
+deformation force. 
+Indicates Muscle 
+Hardness. Critical 
+for assessing 
+contractures or 
+fibrosis. 
+Logarithmic 
+Decrement 
+Creep 
+D 
+C 
+Relaxation Time R 
+2.3 Reliability and Validation - - 
+ms 
+Dissipation of 
+mechanical 
+energy. 
+Viscoelastic flow 
+(Deborah number). 
+Time for tissue to 
+recover shape. 
+Indicates 
+Elasticity. Lower 
+values mean the 
+muscle recovers 
+shape faster 
+(better elasticity). 
+Indicates the 
+tissue's gradual 
+deformation under 
+constant stress. 
+Measure of muscle 
+recovery potential 
+and fatigue state. 
+One of the strongest arguments for the user's proposal is the proven reliability of mechanical 
+sensors over human perception. 
+● Inter-Operator Reliability: Studies involving athletes (footballers, MMA fighters) 
+demonstrated that MyotonPRO measurements have high consistency regardless of who 
+holds the device. Intraclass Correlation Coefficients (ICC) generally exceed 0.80, reaching 
+0.99 for certain parameters like frequency and stiffness. 
+● Sensitivity to Fatigue: Research shows the device can detect subtle changes in muscle 
+stiffness (increase of ~8.6% in vastus lateralis) following fatigue, changes that might be 
+imperceptible to manual touch. 
+● Influence of Skin: While highly reliable, research notes that the presence of skin and 
+subcutaneous fat does dampen the signal (absolute magnitude reduction), but it does not 
+compromise the relative diagnostic validity. This is a crucial technical insight: the 
+proposed device must have algorithms to normalize for skin thickness. 
+2.4 Market Positioning and Relevance to Proposal 
+● Positives: The MyotonPRO validates that a handheld, non-invasive device can quantify 
+tissue properties in seconds. It is cost-effective compared to imaging (~$6,000 range) and 
+requires no consumables. 
+● Gap/Opportunity: The MyotonPRO is marketed primarily for research and sports 
+medicine. It is not utilized for internal medicine diagnostics (e.g., organomegaly, masses, 
+fluid collections). This leaves the entire vertical of clinical internal medicine open for a 
+similar handheld mechanical device. 
+3. The Hard Tissue Specialist: Osstell and Resonance 
+Frequency 
+While Myoton handles soft tissue, Osstell (W&H Dentalwerk) dominates the market for hard 
+tissue interfaces, specifically dental implants. It provides a blueprint for how to commercialize 
+Resonance Frequency Analysis (RFA). 
+3.1 Operating Principle: Magnetic Pulse Excitation 
+Osstell does not rely on direct physical tapping of the bone, which can be painful or damaging. 
+Instead, it utilizes an intermediate transducer. 
+● The SmartPeg: A small, precision-engineered aluminum peg with a magnet is screwed 
+into the dental implant. 
+● Excitation: The handheld Osstell Beacon probe emits magnetic pulses that cause the 
+SmartPeg to vibrate without physical contact. 
+● Analysis: The device listens for the resonance frequency of the peg. As the implant 
+integrates with the bone (osseointegration), the interface becomes stiffer, and the 
+resonance frequency rises. 
+3.2 The ISQ Scale: Standardization of Data 
+A critical success factor for Osstell—and a key recommendation for the user’s proposal—is the 
+conversion of raw physics data (Hertz) into a user-friendly clinical index. 
+● ISQ (Implant Stability Quotient): A scale from 1 to 100. 
+○ < 60 (Red): Low stability. Risk of failure. 
+○ 60-70 (Yellow): Medium stability. 
+○ > 70 (Green): High stability. Safe for immediate loading (attaching the tooth). 
+● Strategic Value: This scale allows dentists to make binary decisions (Load/Wait) without 
+needing to understand the underlying physics of resonance frequencies (typically 
+3000–8000 Hz). 
+3.3 Clinical Guidelines and Market Adoption 
+The device is integrated into clinical workflows. Guidelines suggest measuring ISQ at placement 
+(baseline) and again before final restoration. A drop in ISQ alerts the clinician to failure before it 
+is visible on X-ray. 
+● Accuracy: RFA is shown to be more sensitive than rotational torque tests and avoids the 
+damage caused by torque testing. Studies show a strong correlation between ISQ values 
+and lateral micro-mobility. 
+3.4 Commercial Model: The "Razor and Blade" Strategy 
+Osstell’s financial model is highly relevant to the user's proposal. 
+● Hardware: The handheld Osstell Beacon retails for approximately $3,500 – $4,000 
+USD. 
+● Consumables: The SmartPegs are single-patient use devices (approx. $20–$30 per 
+pack). Because the measurement depends on the precise mass of the peg, users cannot 
+reuse them accurately (wear and tear alters the frequency), ensuring a recurring revenue 
+stream. 
+● Takeaway for Proposal: If the proposed device can utilize a disposable tip or coupling 
+element, it can secure long-term revenue beyond the initial hardware sale. 
+4. The Deep Organ Specialist: FibroScan and 
+Elastography 
+To assess deep visceral organs (specifically the liver), simple surface tapping is insufficient. 
+FibroScan (Echosens) solved this by combining mechanical excitation with ultrasonic tracking. 
+4.1 Operating Principle: Vibration-Controlled Transient Elastography 
+(VCTE) 
+FibroScan uses a specialized probe containing both a mechanical vibrator and an ultrasound 
+transducer. 
+1. Excitation: The vibrator hits the skin, sending a low-frequency (50 Hz) shear wave into 
+the liver. 
+2. Tracking: The ultrasound transducer emits pulses to track the speed of the shear wave 
+as it travels through the liver tissue. 
+3. Calculation: Stiffness (E) is calculated from velocity (V) using E = 3 \rho V^2. The result 
+is displayed in kilopascals (kPa). 
+4.2 Clinical Impact: Replacing Biopsy 
+FibroScan demonstrates the immense value of mechanical diagnostics. Before this device, 
+staging liver fibrosis required a painful, invasive needle biopsy with risks of bleeding. FibroScan 
+turned this into a 5-minute painless office procedure. 
+● Positives for Proposal: It proves that the medical market places a high premium on 
+non-invasive mechanical quantification. Hospitals are willing to pay significantly for 
+devices that reduce invasive procedures. 
+4.3 Limitations as Opportunities 
+Despite its success, FibroScan has specific limitations that the user’s proposed device could 
+address: 
+● Ascites Failure: VCTE fails in patients with ascites (abdominal fluid) because shear 
+waves do not propagate through fluids. This leads to measurement failure or unreliable 
+results. 
+○ Implication for Proposal: A device based on acoustic resonance or percussion 
+(rather than shear wave) would specifically excel at detecting ascites, as fluid 
+creates a distinct resonant signature (dullness) compared to solid tissue. This 
+creates a complementary market niche. 
+● Obesity: Signal attenuation in obese patients is a challenge, requiring specialized "XL" 
+probes. 
+● Cost: FibroScan is capital equipment, costing tens of thousands of dollars ($12,000 - 
+$45,000+ depending on model and region). A handheld screener at a lower price point 
+would be disruptive. 
+5. The Missing Middle: Percussion, Fracture, and 
+Pneumothorax 
+The analysis reveals a "Missing Middle" in the current device landscape. We have superficial 
+muscle tools (Myoton) and deep liver tools (FibroScan), but no widely used handheld device for 
+general abdominal percussion or fracture screening. This is the most fertile ground for the 
+user's proposal. 
+5.1 The "Bessman Percussor" and the Failure of Analog Aids 
+Historically, devices like the Bessman Percussor attempted to aid physical exams. This device 
+was a mechanical tapper that clipped onto a stethoscope. 
+● Failure Mode: It remained an analog tool. It standardized the "tap" but still relied on the 
+physician's ear to interpret the sound. It did not solve the subjectivity problem. 
+● Lesson for Proposal: To succeed, the proposed device must be fully digital. It must 
+both deliver the impulse and analyze the response, providing a binary or scalar output 
+(e.g., "Fluid Detected" or "Fracture Probability: High") rather than just amplifying the 
+sound. 
+5.2 Abdominal Ascites and Pneumothorax Detection 
+Manual percussion is used to detect shifting dullness (ascites) or hyper-resonance 
+(pneumothorax). However, manual sensitivity is only ~83% and specificity ~56%. 
+● Research Validation: Studies using digital accelerometers and "mobile percussographs" 
+have shown that automated analysis can achieve accuracies >90% in classifying chest 
+and abdominal sounds. These systems analyze the signal's frequency spectrum (FFT) 
+and decay rate. 
+● Commercial Void: While startups like Nilocas Ltd and Tabla are exploring acoustic 
+detection for specific conditions (coronary disease, pneumonia), there is no dominant 
+"digital pleximeter" in the market. Sequana Medical has commercialized a pump 
+(alfapump) for treating ascites, identifying a market of 70,000+ refractory patients, but 
+they do not offer a handheld diagnostic tool. This represents a clear entry point for the 
+proposal. 
+5.3 Fracture Detection: The "Tuning Fork" Gap 
+In pre-hospital settings (ambulances, sports fields), diagnosing a fracture without X-ray is 
+difficult. 
+● Current Method: Tuning forks (128 Hz) are used. The vibrating fork is placed on the 
+bone distal to the injury. If the patient feels pain, or if the sound transmission is reduced 
+(auscultation), a fracture is suspected. 
+● Limitations: Sensitivity is decent (75-92%) but specificity is poor (18-94%). Pain is 
+subjective. 
+● Technological Validation: Emerging research (e.g., University of Waterloo) uses 
+microwave antennas or electromagnetic coupling to detect fractures. However, a simpler 
+mechanical resonance device (similar to Osstell but for long bones) could detect the 
+"stiffness drop" caused by a fracture breaks the bone's structural continuity. 
+● Commercial Void: Currently, the market offers simple tuning forks ($15) or expensive 
+bone growth stimulators ($5,000+). There is no diagnostic device in the middle. 
+6. Strategic Validation: Points that Stand for the 
+Proposal 
+Based on the synthesis of the devices above, the following strategic points directly support the 
+user's proposal for a new active mechanical diagnostic device. 
+6.1 Objective Quantification of Subjective Exams 
+● Point: The proposal replaces the "Art of Medicine" with the "Science of Measurement." 
+● Evidence: Manual percussion and palpation are subjective and dying skills. MyotonPRO 
+proves that digital sensors can achieve reliability (ICC > 0.90) that human hands cannot 
+match. The proposal creates a standardized record of the exam, which is crucial for 
+Electronic Health Records (EHR) and malpractice defense. 
+6.2 The "Traffic Light" Triage Capability 
+● Point: The device can offer rapid, binary triage decisions for non-experts (nurses, 
+paramedics). 
+● Evidence: Just as Osstell gives a Green/Red light for dental loading , the proposed 
+device could give a "Red Light" for Pneumothorax or Fracture. This democratizes 
+diagnostic capability, allowing lower-level providers to make critical decisions in the field. 
+6.3 Filling the "Fluid Gap" in Ultrasound 
+● Point: The device succeeds where Ultrasound fails. 
+● Evidence: FibroScan and standard Ultrasound struggle with obesity and signal 
+attenuation in ascites. A mechanical percussion device operating in the audible range is 
+less susceptible to these specific limitations. By detecting the resonance of fluid (which is 
+distinct from solid tissue), the device turns a competitor's weakness into its own strength. 
+6.4 Longitudinal Monitoring of Healing 
+● Point: The device enables safe, frequent monitoring of fracture healing or muscle 
+recovery. 
+● Evidence: X-rays show structure (calcium) but not stiffness (strength). A fracture might 
+look healed on X-ray but still be mechanically weak. Conversely, it might be strong 
+enough to bear weight before the X-ray looks perfect. A mechanical resonance device 
+(like Osstell for femurs) provides the functional data needed to clear an athlete to play or 
+a senior to walk, without repeated radiation exposure. 
+6.5 Cost-Effective Accessibility 
+● Point: The device provides high-value diagnostics at a fraction of the cost of imaging. 
+● Evidence: With a target price range of $1,000 - $5,000 (validated by Osstell/Myoton 
+pricing), the device is accessible to urgent care centers, ambulances, and sports teams 
+that cannot afford CT scanners. This fits the global trend toward point-of-care (POC) 
+diagnostics. 
+7. Comparative Data Analysis: Specifications and 
+Pricing 
+To assist in positioning the proposed device, the following table summarizes the key 
+specifications, pricing, and operational models of the identified "similar devices." 
+Feature 
+MyotonPRO 
+Osstell Beacon FibroScan 
+Primary Target Muscle & Tendon Dental Implants Liver Fibrosis 
+Proposed Device 
+Gap 
+Bone Fracture / 
+Abdomen 
+Physics Principle Mechanical 
+Impulse (Tap) 
+Contact Method Direct Probe 
+Contact 
+Output Metric 
+Consumables 
+Tone (Hz), 
+Stiffness (N/m) 
+None (Reusable 
+Probe) 
+Magnetic 
+Resonance (RFA) 
+Non-contact (via 
+SmartPeg) 
+Transient 
+Elastography 
+(Shear Wave) 
+Vibration Probe + 
+Ultrasound 
+ISQ (1-100 Scale) Stiffness (kPa), 
+CAP (dB/m) 
+SmartPegs 
+(~$25/patient) 
+None (Reusable 
+Probe) 
+Est. Device Cost ~$6,000 - $8,000 ~$3,500 - $4,000 >$20,000 - 
+$45,000 
+User Base 
+Key Limitation 
+Researchers, 
+Sports Med 
+Shallow depth 
+(superficial) 
+Dentists, Oral 
+Surgeons 
+Requires implant 
+hardware 
+Hepatologists, GI 
+Centers 
+Fails with 
+Ascites/Obesity 
+Active 
+Percussion / 
+Resonance 
+Direct or 
+Trans-dermal 
+Resonance Index 
+/ Fluid Flag 
+Disposable Tip 
+(Recommended) 
+Target: $1,500 - 
+$3,000 
+ER, EMS, General 
+Practice 
+Skin/Fat 
+Coupling 
+(Challenge) 
+8. Engineering and Implementation Challenges 
+To demonstrate a nuanced understanding, the report must acknowledge the technical hurdles 
+the proposal will face, as identified in the research literature. 
+8.1 The Coupling Problem 
+● Issue: Transmitting mechanical energy through the skin (soft, damping) to measure a 
+deep organ or bone is difficult. The skin acts as a low-pass filter and a damper. 
+● Research Insight: Myoton measurements are affected by skin thickness. 
+● Solution: The proposal should incorporate Multi-Modal Sensing. Combining the 
+mechanical actuator with both an accelerometer (to measure surface recoil) and a 
+microphone (to measure acoustic resonance) can help isolate the deep tissue signal from 
+the surface noise. Low-frequency excitation (< 1000 Hz) penetrates better than high 
+frequency. 
+8.2 Standardization of Force 
+● Issue: To compare readings over time, the "tap" must be identical every time. 
+● Research Insight: Myoton uses a solenoid with a pre-load mechanism to ensure 
+constant force (0.4 N) regardless of how hard the operator presses. 
+● Solution: The proposed device must use an electromechanical actuator (solenoid or 
+voice coil) rather than a spring-loaded manual hammer to ensure digital reproducibility. 
+8.3 Biological Variability 
+● Issue: "Normal" stiffness varies by age, BMI, and hydration. 
+● Research Insight: There is no single "normal" frequency for a human femur or abdomen. 
+● Solution: The device should focus on Asymmetry (comparing left vs. right leg) or 
+Longitudinal Change (monitoring the same patient over days). This removes the need 
+for a universal absolute baseline. 
+9. Start-up and Competitor Landscape 
+The landscape is active but not crowded in the specific niche of the proposal. 
+● Sequana Medical: Focused on treating ascites with the alfapump, an implantable pump. 
+Their market data (70,000 refractory patients) validates the massive need for better 
+ascites management, supporting the business case for a diagnostic screener. 
+● Nilocas Ltd: Developing a chest pad for coronary heart disease detection using acoustic 
+analysis of turbulent blood flow. This confirms the trend toward acoustic/mechanical 
+diagnostics. 
+● ElectroSonics Medical / LLNL: Developed a "pneumothorax detector" using 
+ultra-wideband (UWB) radar. This is a competitor using a different physics principle (RF 
+vs. Mechanical), highlighting the demand for pneumothorax screening. 
+● Brain-Computer Interface / Neurotech: Startups like NeoAcoustic are using ultrasound 
+for brain stimulation, showing the versatility of acoustic technologies, though less relevant 
+to the direct proposal. 
+10. Conclusion 
+The search results confirm that the user's proposed device operates on a scientifically valid 
+and commercially proven principle. The success of Osstell in dentistry and FibroScan in 
+hepatology demonstrates that the medical market values non-invasive mechanical quantification 
+of tissue properties and is willing to pay premium prices for it. 
+The proposal stands to succeed by targeting the "Missing Middle"—the detection of 
+abdominal fluid/air (ascites/pneumothorax) and long-bone fractures. These are 
+high-volume, critical conditions currently managed by subjective manual exams or expensive 
+imaging. 
+Key Positives for the Proposal: 
+1. Clinical Objectivity: Converting subjective "dullness" or "pain" into objective digital 
+metrics (Stiffness Index, Resonance Score). 
+2. Safety Profile: Zero radiation and non-invasive nature allow for unlimited repeat testing 
+(monitoring). 
+3. Market Gap: No dominant handheld competitor exists for general abdominal percussion 
+or fracture screening. 
+4. Cost Efficiency: Positioning as a cost-effective alternative to CT/X-ray for rapid triage. 
+By leveraging the engineering precedents of uniform impulse delivery (Myoton) and simplified 
+index output (Osstell), the proposed device can redefine the standard of care for physical 
+examinations. 
+Works cited 
+1. Technology - Myoton, https://www.myoton.com/technology/ 2. Assessment of Muscle 
+Stiffness Using the MyotonPro: Effects of Fatigue on Vastus Lateralis and Medialis Muscles - 
+MDPI, https://www.mdpi.com/2075-4426/14/3/301 3. Osstell Beacon - USER MANUAL, 
+https://www.osstell.com/app/uploads/25087-03-Beacon-User-Manual-All-Languages.pdf 4. The 
+technique behind Osstell, 
+https://www.osstell.com/clinical-guidelines/the-technique-behind-osstell/ 5. US6061597A - 
+Method and device for healing bone fractures - Google Patents, 
+https://patents.google.com/patent/US6061597A/en 6. Fibroscan (Transient Elastography) for the 
+Measurement of Liver Fibrosis - PMC - NIH, https://pmc.ncbi.nlm.nih.gov/articles/PMC3594956/ 
+7. Technology of fibroscan - LivScan, https://livscan.com/technology/ 8. Muscle Diagnostics - 
+Myoton - MyotonPRO - Healthlink Holdings Limited, 
+https://www.healthlinkholdings.com/products/muscle-diagnostics/digital-palpation-device-myoton
+pro/ 9. Reliability of MyotonPro in measuring the biomechanical properties of the quadriceps 
+femoris muscle in people with different levels and types of motor preparation - NIH, 
+https://pmc.ncbi.nlm.nih.gov/articles/PMC11390662/ 10. Reliability of a portable device for 
+quantifying tone and stiffness of quadriceps femoris and patellar tendon at different knee flexion 
+angles - PMC - NIH, https://pmc.ncbi.nlm.nih.gov/articles/PMC6668831/ 11. Feasibility of using 
+a hand-held device to characterize tendon tissue biomechanics, 
+https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0184463 12. Clinical guidelines 
+by Osstell, https://www.osstell.com/clinical-guidelines/ 13. The Osstell ISQ Scale | 
+Evidence-based, https://www.osstell.com/clinical-guidelines/the-osstell-isq-scale/ 14. Osstell 
+Beacon - Global Dental Shop, https://www.globaldentalshop.com/products/osstell-beacon 15. 
+Osstell Beacon Implant Stability Measurement | SHINODA DENTAL, 
+https://shinodadental.com/product/osstell-beacon/ 16. Osstell ISQ Beacon - DDSGadget, 
+https://www.ddsgadget.com/osstell-beacon-isq.html 17. The Comprehensive Guide to 
+FibroScan Liver Tests - Olivine International, 
+https://www.olivineinternational.com/the-comprehensive-guide-to-fibroscan-liver-tests/ 18. 
+Magnetic Resonance Elastography of Liver: Technique, Analysis and Clinical Applications - 
+PMC - NIH, https://pmc.ncbi.nlm.nih.gov/articles/PMC3579218/ 19. FibroScan and transient 
+elastography - RACGP, https://www.racgp.org.au/afp/2013/july/fibroscan 20. Fibroscan Touch at 
+best price in Prayagraj by Consul Enterprises | ID - IndiaMART, 
+https://www.indiamart.com/proddetail/fibroscan-touch-24110424812.html 21. Echosens 
+Fibroscan 603 Touch For Hospital Use at ₹ 1000000 in Pune | ID - IndiaMART, 
+https://www.indiamart.com/proddetail/echosens-fibroscan-603-touch-for-hospital-use-20847386
+548.html 22. This summary of safety and effectiveness is being submitted in accordance with 
+the requirements of SMDA 1990 and 21 CFR Part 807 - accessdata.fda.gov, 
+https://www.accessdata.fda.gov/cdrh_docs/pdf6/K063645.pdf 23. Device for medical percussion - US6790184B2 - Google Patents, https://patents.google.com/patent/US6790184B2/en 24. 
+(PDF) Use of abdominal percussion or pneumoperitoneum detection - ResearchGate, 
+https://www.researchgate.net/publication/11161413_Use_of_abdominal_percussion_or_pneumo
+peritoneum_detection 25. What is the percussion finding in ascites? - Dr.Oracle AI, 
+https://www.droracle.ai/articles/87398/what-is-the-percussion-finding-in-ascites 26. Highly 
+sensitive monitoring of chest wall dynamics and acoustics provides diverse valuable information 
+for evaluating ventilation and diagnosing pneumothorax, 
+https://journals.physiology.org/doi/full/10.1152/japplphysiol.00966.2013 27. Sequana Medical 
+Announces First U.S. Commercial alfapump® Implantation at Mount Sinai Hospital in New York, 
+https://www.sequanamedical.com/press-releases/sequana-medical-announces-first-u-s-commer
+cial-alfapump-implantation-at-mount-sinai-hospital-in-new-york/ 28. Sequana Medical Marks 
+alfapump Milestone, 
+https://www.mpo-mag.com/breaking-news/sequana-medical-marks-alphapump-milestone/ 29. 
+Using Tuning-Fork Tests in Diagnosing Fractures - PMC - NIH, 
+https://pmc.ncbi.nlm.nih.gov/articles/PMC5076288/ 30. AI-powered antenna revolutionizes bone 
+fracture diagnosis | Waterloo News, 
+https://uwaterloo.ca/news/media/ai-powered-antenna-revolutionizes-bone-fracture-diagnosis 31. 
+A Novel Capacitive Measurement Device for Longitudinal Monitoring of Bone Fracture Healing - 
+PubMed Central, https://pmc.ncbi.nlm.nih.gov/articles/PMC8512850/ 32. The Biomet® 
+OrthoPak® Non-invasive Bone Growth Stimulator System - Highridge Medical, 
+https://highridgemedical.com/bone-healing/the-biomet-orthopak-non-invasive-bone-growth-stim
+ulator-system/ 33. Physio Stim Bone Healing Therapy - Medical Motion, LLC - Premier 
+Orthopedic Equipment Rentals & Sales in Tulsa, Oklahoma, 
+https://med-mo.com/product/physio-stim-bone-healing-therapy/ 34. Osstell - eBay, 
+https://www.ebay.com/shop/osstell?_nkw=osstell 35. Medical Devices And AI: 7 Startups 
+Transforming Patient Care - consonance.tech, 
+https://consonance.tech/blog/medical-devices-and-ai-7-startups/ 36. FLC | Noninvasive 
+pneumothorax detection - Federal Laboratory Consortium, 
+https://federallabs.org/flc-highlights/awards/noninvasive-pneumothorax-detection-8dae8e6ad2f2
+0aa9d86f451989765748 37. University Startups - Research & Innovation Office, 
+https://research.umn.edu/units/techcomm/startups/university-startups

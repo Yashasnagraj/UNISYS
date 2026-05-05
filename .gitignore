@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual envs
+venv/
+env/
+.venv/
+
+# Local pip cache snapshot
+pip_cache/
+
+# Editor / tooling
+.claude/
+.zencoder/
+.zenflow/
+.vscode/
+.idea/
+
+# OS / shell artifacts
+nul
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/secrets.toml

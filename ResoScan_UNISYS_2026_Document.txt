@@ -1,0 +1,587 @@
+ResoScan: Non-Invasive Biomechanical Diagnostics via Resonant Modal Spectroscopy
+
+UNISYS 2026 Submission Document
+
+────────────────────────────────────────────────────────────────────────────────
+
+STUDENT DETAILS
+
+Yashas N
+Dept. of Artificial Intelligence and Data Science
+Ramaiah Institute of Technology
+Ph: 9844466826
+Email: yashraaj2005@gmail.com
+
+Jeeth Kataria
+Dept. of Artificial Intelligence and Data Science
+Ramaiah Institute of Technology
+Ph: 9916440909
+Email: jeethkataria9798@icloud.com
+
+Naveen Gopalakrishna Patil
+Dept. of Artificial Intelligence and Machine Learning
+Ramaiah Institute of Technology
+Ph: 6363 918 396
+Email: naveengpatil26@gmail.com
+
+[Fourth Member - To Be Added]
+Dept. of [Department]
+Ramaiah Institute of Technology
+Ph: [Phone]
+Email: [Email]
+
+────────────────────────────────────────────────────────────────────────────────
+
+PROJECT GUIDE
+
+Dr. SOWMYA B. J.
+Associate Professor
+Dept. of Artificial Intelligence and Data Science
+M S Ramaiah Institute of Technology
+Ph: 9886867568
+Email: sowmyabj@msrit.edu
+
+────────────────────────────────────────────────────────────────────────────────
+
+INTRODUCTION
+
+Modern medical diagnostics relies heavily on imaging modalities such as X-ray, CT, MRI, and Ultrasound to visualize anatomical structures. While these technologies provide excellent spatial resolution, they share a critical limitation: they reveal structure but not function. A healed fracture may appear bridged on X-ray weeks before it can safely bear weight. A mass detected on ultrasound cannot be characterized as fluid-filled or solid without additional invasive testing. Furthermore, these technologies require expensive infrastructure, trained radiologists, and often expose patients to ionizing radiation.
+
+ResoScan addresses this diagnostic gap by introducing a novel approach: Resonant Modal Spectroscopy (RMS) for non-invasive biomechanical tissue characterization. The device digitizes and quantifies the centuries-old clinical art of physical percussion and palpation. When a physician taps a patient's chest, they listen for "dullness" (fluid) versus "resonance" (air). When they palpate the abdomen, they feel for "stiffness" (mass) versus "softness" (normal). These subjective assessments, dependent on individual skill and experience, can now be transformed into objective, quantifiable metrics.
+
+ResoScan employs a Voice Coil Actuator (VCA) to deliver controlled mechanical impulses across a programmable frequency range (20 Hz - 1 kHz). A high-bandwidth MEMS accelerometer captures the tissue's vibrational response. By analyzing the resonant frequencies, damping characteristics, and spectral signatures using Fast Fourier Transform (FFT) and machine learning algorithms, the device can differentiate between tissue states: fractured versus healed bone, air-filled versus consolidated lung, compliant versus stiff bladder.
+
+This project proposes a low-cost, portable, radiation-free diagnostic platform with applications in:
+1. Orthopedics - Monitoring fracture healing through stiffness recovery
+2. Pulmonology - Detecting pneumothorax via acoustic hyper-resonance
+3. Urology - Assessing bladder compliance through Lamb wave analysis
+
+With an estimated Bill of Materials under $80 and a target retail price of $300-500, ResoScan democratizes functional diagnostics for resource-constrained settings, emergency triage, and home monitoring.
+
+────────────────────────────────────────────────────────────────────────────────
+
+PROBLEM STATEMENT
+
+The current landscape of medical diagnostics presents several critical challenges that ResoScan aims to address:
+
+1. The Structure-Function Gap
+
+X-ray imaging visualizes calcium deposition, which appears weeks after mechanical strength returns in healing fractures. Orthopedic surgeons currently rely on subjective clinical judgment to determine when a patient can safely bear weight or return to activity. Studies show that the mechanical stiffness of a fracture site recovers significantly earlier than radiological signs of healing. This gap leads to either:
+- Premature mobilization causing re-fracture, or
+- Unnecessarily prolonged immobilization causing muscle atrophy and joint stiffness
+
+2. Subjectivity in Physical Examination
+
+Physical percussion and palpation remain fundamental clinical skills, yet their accuracy varies dramatically with physician experience. Research indicates that manual percussion for ascites detection has sensitivity of only 83% and specificity of 56%. Junior clinicians often misinterpret findings, leading to delayed diagnoses or unnecessary imaging referrals.
+
+3. Inaccessibility of Advanced Diagnostics
+
+Current solutions for tissue stiffness assessment exist but remain inaccessible:
+- FibroScan (liver elastography): $20,000 - $45,000, fails with ascites/obesity
+- MyotonPRO (muscle diagnostics): $6,000 - $8,000, superficial tissues only
+- Osstell (dental implants): $4,000, requires specialized hardware
+
+There is no affordable, general-purpose handheld device for mechanical tissue characterization at the point of care.
+
+4. Invasive Monitoring Procedures
+
+Certain diagnostic assessments remain inherently invasive:
+- Bladder compliance measurement requires urethral catheterization (infection risk)
+- Fracture stability assessment sometimes requires surgical exploration
+- Pneumothorax confirmation often requires CT imaging (radiation exposure)
+
+5. The "Missing Middle" in Diagnostics
+
+The current market offers either simple tools (tuning forks, reflex hammers - $15) or expensive imaging equipment ($20,000+). There is a distinct absence of intermediate diagnostic technology that provides quantitative functional assessment at an accessible price point.
+
+ResoScan addresses these challenges by providing an objective, non-invasive, low-cost, portable device that quantifies tissue mechanical properties in real-time, bridging the gap between subjective clinical examination and expensive imaging infrastructure.
+
+────────────────────────────────────────────────────────────────────────────────
+
+OBJECTIVES
+
+1. Design and Fabricate a Handheld Prototype: Develop a compact, ergonomic device integrating a Voice Coil Actuator for mechanical excitation and MEMS accelerometer for vibration sensing, with total Bill of Materials under $100.
+
+2. Implement Multi-Frequency Excitation: Enable programmable chirp signals (20 Hz - 1 kHz) to excite different tissue resonance modes, allowing characterization of both superficial structures (bone) and deep organs (bladder).
+
+3. Develop Real-Time Signal Processing Pipeline: Create firmware for the ESP32 microcontroller to perform data acquisition, and companion software for FFT analysis, feature extraction, and spectral visualization.
+
+4. Validate Resonance-Stiffness Correlation: Demonstrate that materials/tissues of different stiffness produce measurably different resonant frequency signatures, establishing the scientific foundation of the device.
+
+5. Create Machine Learning Classification Models: Train classifiers to distinguish between tissue states (e.g., "bone-like" vs "soft tissue-like", "normal" vs "abnormal") based on spectral features.
+
+6. Design Intuitive User Interface: Develop a visual dashboard displaying real-time FFT spectrograms, stiffness indices, and diagnostic indicators suitable for clinical interpretation.
+
+7. Document Clinical Application Protocols: Establish standardized measurement procedures for each diagnostic application (fracture monitoring, pneumothorax screening, bladder assessment) including probe placement, preload requirements, and interpretation guidelines.
+
+8. Ensure Reproducibility and Reliability: Implement force-feedback mechanisms and calibration protocols to minimize operator-dependent variability and soft tissue artifacts.
+
+────────────────────────────────────────────────────────────────────────────────
+
+HARDWARE REQUIREMENTS
+
+Component               | Specification                              | Purpose                                      | Est. Cost
+------------------------|--------------------------------------------|--------------------------------------------- |-----------
+Microcontroller         | ESP32-WROOM-32                             | Signal generation (DAC), data acquisition    | $5
+Accelerometer           | ADXL343/345 (prototype) / IIS3DWB (prod)   | Vibration sensing, 3-axis, I2C interface     | $5 - $8
+Actuator                | Voice Coil / Speaker (Dayton TT25)         | Mechanical excitation, frequency sweep       | $15 - $25
+Amplifier               | LM386 (prototype) / PAM8403 (production)   | Audio power amplification                    | $2 - $5
+Force Sensor            | FSR402 / HX711 + Load Cell                 | Preload measurement for standardization      | $3 - $5
+Power                   | Li-Po Battery 2000mAh + TP4056 Charger     | Portable power supply                        | $5
+Housing                 | 3D Printed ABS/PLA Enclosure               | Ergonomic handheld form factor               | $10
+Coupling Tip            | Silicone Elastomer (interchangeable)       | Impedance matching to skin                   | $2
+Miscellaneous           | PCB, connectors, wires, capacitors         | Circuit integration                          | $10
+------------------------|--------------------------------------------|--------------------------------------------- |-----------
+TOTAL BOM               |                                            |                                              | ~$60 - $80
+
+────────────────────────────────────────────────────────────────────────────────
+
+SOFTWARE REQUIREMENTS
+
+Category                | Technology                    | Purpose
+------------------------|-------------------------------|--------------------------------------------------
+Embedded Firmware       | Arduino/ESP-IDF (C++)         | DAC waveform generation, I2C sensor reading
+Signal Processing       | Python (NumPy, SciPy)         | FFT, filtering, feature extraction
+Visualization           | PyQtGraph / Matplotlib        | Real-time spectrogram display
+Machine Learning        | TensorFlow / Scikit-learn     | Classification models for tissue state
+User Interface          | Python (PyQt5) / React        | Dashboard for clinical interpretation
+Data Storage            | SQLite / Firebase             | Patient records, measurement history
+Communication           | PySerial / BLE                | Device-to-PC data transfer
+
+────────────────────────────────────────────────────────────────────────────────
+
+PROPOSED SOLUTION
+
+System Architecture
+
++---------------------------------------------------------------------+
+|                         ResoScan Device                              |
++---------------------------------------------------------------------+
+|                                                                      |
+|   +----------+    DAC     +----------+         +--------------+     |
+|   |  ESP32   | ---------- |  LM386   | ------- |   Speaker/   |     |
+|   |   MCU    |            |   Amp    |         |     VCA      |     |
+|   +----+-----+            +----------+         +------+-------+     |
+|        |                                              |             |
+|        | I2C                               Mechanical |             |
+|        |                                   Excitation |             |
+|   +----+-----+                                       V              |
+|   | ADXL343  | <---- Vibration <---- [ TISSUE UNDER TEST ]         |
+|   |   Acc    |       Response                                       |
+|   +----+-----+                                                      |
+|        |                                                             |
+|        | USB/Serial                                                  |
+|        V                                                             |
++---------------------------------------------------------------------+
+|                      PC / Laptop                                     |
++---------------------------------------------------------------------+
+|   +----------+    +----------+    +----------+    +----------+      |
+|   |  Serial  | -> |   FFT    | -> | Feature  | -> |    ML    |      |
+|   |  Reader  |    |   DSP    |    | Extract  |    | Classify |      |
+|   +----------+    +----------+    +----------+    +----+-----+      |
+|                                                        |            |
+|                                                        V            |
+|                                              +------------------+   |
+|                                              |   Dashboard UI   |   |
+|                                              |  - Spectrogram   |   |
+|                                              |  - Stiffness Idx |   |
+|                                              |  - Diagnostic    |   |
+|                                              +------------------+   |
++---------------------------------------------------------------------+
+
+Signal Processing Workflow
+
+1. Excitation Generation
+- ESP32 DAC generates programmable waveforms:
+  - Chirp: Linear frequency sweep 20 Hz to 1000 Hz over 500ms
+  - Impulse: Short Gaussian pulse for transient response
+  - Single Frequency: Sustained tone for specific resonance probing
+
+2. Response Acquisition
+- ADXL343 accelerometer samples at 3200 Hz (Nyquist: 1600 Hz)
+- 12-bit resolution via I2C interface
+- Continuous streaming to PC via USB Serial (115200 baud)
+
+3. Spectral Analysis
+- Windowed FFT (Hanning, 1024 points) for frequency resolution
+- Power Spectral Density (PSD) calculation
+- Peak detection for resonant frequency identification
+- Damping ratio estimation via half-power bandwidth method
+
+4. Feature Extraction
+- f_resonant: Dominant resonant frequency (Hz)
+- Amplitude: Peak magnitude at resonance
+- Q-factor: Sharpness of resonance (stiffness indicator)
+- Damping ratio: Energy dissipation (fluid indicator)
+- Spectral centroid: Center of mass of spectrum
+
+5. Classification
+- Random Forest / SVM classifier trained on labeled data
+- Binary output: "Normal" vs "Abnormal" or tissue type
+- Confidence score for clinical interpretation
+
+Clinical Application Protocols
+
+Application 1: Fracture Healing Monitoring (Orthopedics)
+- Measurement: Pitch-catch configuration
+- Excitation: Medial malleolus (ankle)
+- Sensing: Tibial tuberosity (below knee)
+- Metric: Tibial Stiffness Index (TSI) = f2_injured / f2_healthy x 100%
+- Interpretation: TSI > 80% indicates safe for weight-bearing
+
+Application 2: Pneumothorax Detection (Pulmonology)
+- Measurement: Direct percussion on chest wall
+- Excitation: Intercostal space, mid-clavicular line
+- Sensing: Same probe (impulse-response)
+- Metric: Power ratio in 200-400 Hz band (left vs right)
+- Interpretation: Ratio > 2.0 indicates hyper-resonance (air trapping)
+
+Application 3: Bladder Compliance (Urology)
+- Measurement: Lamb wave propagation
+- Excitation: Suprapubic region (20-100 Hz)
+- Sensing: 5-10 cm lateral displacement
+- Metric: Wave velocity c_g (m/s)
+- Interpretation: c_g > 4 m/s indicates elevated intravesical pressure
+
+────────────────────────────────────────────────────────────────────────────────
+
+EXPECTED OUTCOMES
+
+1. Functional Prototype Demonstration: A working handheld device capable of exciting tissue and capturing vibrational response, with real-time FFT visualization on a connected computer.
+
+2. Material Differentiation Proof: Demonstrated ability to distinguish between materials of different stiffness (wood vs rubber, metal vs plastic) through measurable spectral differences.
+
+3. Biological Signal Acquisition: Successful capture of resonance signatures from human tissue (shin bone vs calf muscle), validating the device's applicability to biomedical diagnostics.
+
+4. Quantitative Stiffness Correlation: Established relationship between material stiffness and resonant frequency, confirming the theoretical foundation (frequency squared is proportional to stiffness over mass).
+
+5. Classification Accuracy: Machine learning model achieving >80% accuracy in distinguishing tissue types from spectral features on validation dataset.
+
+6. User Interface Dashboard: Intuitive visualization tool displaying real-time spectrogram, stiffness index, and diagnostic indicators suitable for clinical interpretation.
+
+7. Reproducible Measurement Protocol: Documented procedures ensuring consistent measurements across operators, including preload standardization and calibration routines.
+
+8. Cost-Effective Design Validation: Confirmed BOM under $100, demonstrating viability as a low-cost diagnostic solution for resource-constrained settings.
+
+9. Foundation for Clinical Validation: Complete technical documentation and prototype suitable for future IRB-approved clinical trials.
+
+────────────────────────────────────────────────────────────────────────────────
+
+CONCLUSION
+
+ResoScan represents a paradigm shift in medical diagnostics - from expensive, infrastructure-dependent imaging to affordable, portable, functional assessment. By digitizing the ancient art of percussion and palpation, we transform subjective clinical impressions into objective, quantifiable data.
+
+The device addresses a critical unmet need in healthcare: the "Missing Middle" between simple physical examination tools and expensive imaging equipment. With applications spanning orthopedics (fracture healing), pulmonology (pneumothorax detection), and urology (bladder compliance), ResoScan offers a versatile platform for multi-modal diagnostics.
+
+Our technical approach leverages established physics - resonant frequency analysis and mechanical impedance - validated by existing commercial devices (Osstell, MyotonPRO, FibroScan) in specialized domains. ResoScan's innovation lies in generalizing these principles into a single, affordable, handheld platform suitable for point-of-care use.
+
+The prototype demonstrates feasibility with a BOM under $80, utilizing readily available components (ESP32, MEMS accelerometers, voice coil actuators). Real-time FFT analysis and machine learning classification provide immediate diagnostic feedback, potentially revolutionizing triage in emergency settings, remote healthcare, and home monitoring.
+
+Future development will focus on:
+- Clinical validation through IRB-approved trials
+- Regulatory pathway (FDA Class II / De Novo)
+- Miniaturization and integration into a single handheld unit
+- Expansion of ML models with clinical datasets
+- Development of condition-specific diagnostic algorithms
+
+ResoScan envisions a future where every clinic, ambulance, and home has access to functional diagnostic technology - where a paramedic can detect pneumothorax in minutes, a sports physician can clear an athlete based on objective stiffness data, and a patient with neurogenic bladder can monitor their condition without catheterization.
+
+By bridging the gap between the art of medicine and the science of measurement, ResoScan aims to democratize diagnostics and improve patient outcomes globally.
+
+────────────────────────────────────────────────────────────────────────────────
+
+REFERENCES
+
+1. A quantitative and non-invasive vibrational method to assess bone fracture healing. PMC, 2021. https://pmc.ncbi.nlm.nih.gov/articles/PMC8130726/
+
+2. Non-invasive assessment of urinary bladder compliance using ultrasound: first validation study based on clinical urodynamic study. PubMed, 2021. https://pubmed.ncbi.nlm.nih.gov/33987245/
+
+3. Tabla: A Proof-of-Concept Auscultatory Percussion Device for Low-Cost Pneumonia Detection. PMC, 2018. https://pmc.ncbi.nlm.nih.gov/articles/PMC6111795/
+
+4. Non-Invasive Measurement of the Internal Pressure of a Pressurized Biological Compartment Using Lamb Waves. PMC, 2022. https://pmc.ncbi.nlm.nih.gov/articles/PMC9713951/
+
+5. FDA Clears OsteoProbe (K250216): First-Ever Device Indication for Measuring Bone Material Strength. BioSpace, 2025. https://www.biospace.com/press-releases/fda-clears-osteoprobe-k250216
+
+6. Technology - Myoton. https://www.myoton.com/technology/
+
+7. The technique behind Osstell. https://www.osstell.com/clinical-guidelines/the-technique-behind-osstell/
+
+8. Fibroscan (Transient Elastography) for the Measurement of Liver Fibrosis. PMC, 2013. https://pmc.ncbi.nlm.nih.gov/articles/PMC3594956/
+
+9. Voice Coil Actuators vs. Solenoids: What is the difference? Automation.com. https://www.automation.com/article/voice-coil-actuators-vs-solenoids-what-is-the-diff
+
+10. Effects of mass loading on the viability of assessing the state of healing of a fixated fractured long bone. PMC, 2019. https://pmc.ncbi.nlm.nih.gov/articles/PMC6582286/
+
+11. Low-Cost IoT-Based Predictive Maintenance Using Vibration. PMC, 2024. https://pmc.ncbi.nlm.nih.gov/articles/PMC12609400/
+
+12. IIS3DWB Product Datasheet. STMicroelectronics. https://www.st.com/en/mems-and-sensors/iis3dwb.html
+
+────────────────────────────────────────────────────────────────────────────────
+
+KEYWORDS
+
+Resonant Modal Spectroscopy, Non-Invasive Diagnostics, Tissue Stiffness, Mechanical Impedance Analysis, Fracture Healing Monitoring, Pneumothorax Detection, Bladder Compliance, Voice Coil Actuator, MEMS Accelerometer, Fast Fourier Transform, Point-of-Care Diagnostics, Biomedical Engineering, Digital Percussion, Elastography, Lamb Wave Analysis, Machine Learning Classification, ESP32, Low-Cost Medical Devices, Portable Healthcare Technology.
+
+────────────────────────────────────────────────────────────────────────────────
+
+LIMITATIONS AND RISK MITIGATION
+
+Technical Limitations
+
+Limitation                  | Impact                                           | Mitigation Strategy
+----------------------------|--------------------------------------------------|--------------------
+Soft Tissue Artifact (STA)  | Skin, fat, muscle act as dampers                 | Standardized preload protocol (8-12 N), force sensor feedback, ML algorithms
+Obesity Barrier             | BMI > 35 attenuates mechanical waves             | Focus on superficial targets, lower frequencies (20-50 Hz)
+ADXL345 Bandwidth           | 1.6 kHz vs desired 2+ kHz                        | Acceptable for prototype, upgrade to IIS3DWB for production
+Operator Variability        | Probe angle/pressure affects consistency         | Force sensor quality gate, visual feedback, averaging
+Biological Variability      | Normal resonance varies by age, height, anatomy  | Contralateral comparison, longitudinal tracking
+
+Clinical and Regulatory Limitations
+
+Limitation                  | Impact                                           | Mitigation Strategy
+----------------------------|--------------------------------------------------|--------------------
+No Clinical Validation Yet  | Cannot make diagnostic claims                    | Position as research tool, partner with hospitals for pilot studies
+Regulatory Uncertainty      | FDA De Novo may need clinical evidence           | Pursue CDSCO India first, identify predicate devices
+Not a Replacement           | Cannot detect all pathologies                    | Position as complementary to imaging
+
+Business and Market Limitations
+
+Limitation                  | Impact                                           | Mitigation Strategy
+----------------------------|--------------------------------------------------|--------------------
+Physician Adoption          | New modality requires education                  | Partner with medical colleges, publish studies, free trials
+IP/Competition Risk         | Large players could enter market                 | File provisional patents, build evidence moat, low price point
+Manufacturing Scale         | Prototype to 10,000 units is different           | Partner with contract manufacturers, design for manufacturability
+
+What This Device Is NOT
+
+1. NOT a diagnostic device (until clinically validated) - It is a measurement instrument that provides quantitative mechanical data to inform clinical judgment
+
+2. NOT a replacement for imaging - X-ray, CT, and ultrasound remain necessary for anatomical assessment; ResoScan adds functional mechanical data
+
+3. NOT suitable for all patients - Severe obesity, significant edema, or skin conditions may preclude accurate measurement
+
+4. NOT an emergency-only device - While useful for triage, confirmatory diagnosis should follow standard protocols
+
+Risk Matrix
+
+Risk                           | Probability | Impact    | Overall | Status
+-------------------------------|-------------|-----------|---------|---------------------------
+Technical failure (no signal)  | Low         | High      | Medium  | Mitigated by proven physics
+Poor market adoption           | Medium      | High      | High    | Mitigated by price advantage
+Regulatory delays              | Medium      | Medium    | Medium  | Mitigated by India-first
+Competition entry              | Low         | Medium    | Low     | Mitigated by cost structure
+Clinical validation failure    | Low         | Very High | Medium  | Mitigated by incremental claims
+
+────────────────────────────────────────────────────────────────────────────────
+
+REVENUE MODEL AND BUSINESS PLAN (Indian Market - INR)
+
+Cost Structure
+
+Component                    | Cost (INR)
+-----------------------------|---------------
+BOM (Bill of Materials)      | Rs. 5,000 - 6,500
+Manufacturing and Assembly   | Rs. 1,500 - 2,000
+Quality Testing              | Rs. 500
+Packaging                    | Rs. 300
+Total Production Cost        | Rs. 7,300 - 9,300
+
+Device Pricing Tiers
+
+Variant           | Target User              | Features                        | Price (INR)         | Margin
+------------------|--------------------------|--------------------------------|---------------------|--------
+ResoScan Home     | Patients (home)          | Basic metrics, single mode     | Rs. 15,000 - 20,000 | 60%
+ResoScan Clinic   | Primary care clinics     | All 3 modes, basic AI          | Rs. 30,000 - 40,000 | 70%
+ResoScan Pro      | Hospitals, specialists   | Full AI suite, cloud           | Rs. 50,000 - 75,000 | 75%
+ResoScan Research | Medical colleges, R&D    | Raw data export, API access    | Rs. 1,00,000        | 80%
+
+Recurring Revenue Streams
+
+A. Consumables (Razor-Blade Model)
+
+Item                              | Price (INR) | Usage        | Monthly Revenue/Device
+----------------------------------|-------------|--------------|------------------------
+Disposable Silicone Tips (10-pack)| Rs. 150     | 1 tip/patient| Rs. 300 - 1,500
+Calibration Kit                   | Rs. 500     | Quarterly    | Rs. 125/month
+Coupling Gel (optional)           | Rs. 100     | Monthly      | Rs. 100
+
+Annual consumables per device: Rs. 4,000 - 20,000
+
+B. Software Subscriptions (SaaS)
+
+Plan             | Features                          | Monthly (INR) | Annual (INR)
+-----------------|-----------------------------------|---------------|-------------
+Basic            | Local storage, basic AI           | Free          | Free
+Pro              | Cloud sync, full AI, reports      | Rs. 999       | Rs. 9,999
+Enterprise       | Multi-device, analytics, API      | Rs. 4,999     | Rs. 49,999
+Hospital License | Unlimited devices, EMR integration| Rs. 19,999    | Rs. 1,99,999
+
+C. Services
+
+Service                           | Price (INR)
+----------------------------------|------------------
+Training and Certification        | Rs. 5,000
+Extended Warranty (per year)      | Rs. 3,000
+On-site Calibration               | Rs. 2,000
+Custom Integration                | Rs. 25,000 - 1,00,000
+
+Target Market (India)
+
+Segment                           | Establishments | Addressable
+----------------------------------|----------------|-------------------------
+Government Hospitals (PHCs, CHCs) | 1,50,000+      | High volume, tender-based
+Private Hospitals                 | 70,000         | Mid-high price tolerance
+Orthopedic Clinics                | 15,000         | Primary target
+Sports Medicine Centers           | 2,000          | Premium segment
+Physiotherapy Centers             | 50,000         | High volume
+Diagnostic Chains                 | 500+ centers   | B2B partnership
+Medical Colleges                  | 600            | Research + training
+
+Total Addressable Market (TAM): ~3,00,000 potential units
+
+Five-Year Revenue Projection
+
+Year   | Devices Sold | Avg. Price  | Device Revenue | Subscription | Consumables | Total Revenue
+-------|--------------|-------------|----------------|--------------|-------------|---------------
+Year 1 | 100          | Rs. 35,000  | Rs. 35 Lakhs   | Rs. 2 Lakhs  | Rs. 2 Lakhs | Rs. 39 Lakhs
+Year 2 | 500          | Rs. 35,000  | Rs. 1.75 Cr    | Rs. 15 Lakhs | Rs. 12 Lakhs| Rs. 2.02 Cr
+Year 3 | 2,000        | Rs. 40,000  | Rs. 8 Cr       | Rs. 60 Lakhs | Rs. 50 Lakhs| Rs. 9.1 Cr
+Year 4 | 5,000        | Rs. 40,000  | Rs. 20 Cr      | Rs. 2 Cr     | Rs. 1.5 Cr  | Rs. 23.5 Cr
+Year 5 | 10,000       | Rs. 45,000  | Rs. 45 Cr      | Rs. 5 Cr     | Rs. 4 Cr    | Rs. 54 Cr
+
+Cumulative 5-Year Revenue: ~Rs. 89 Crore
+
+Note: Projections are indicative and represent an upper-bound scenario assuming successful clinical validation, regulatory approval, and procurement partnerships.
+
+Unit Economics (Per Device - Clinic variant @ Rs. 35,000)
+
+Selling Price:                    Rs. 35,000
+- Production Cost:                Rs. 8,000
+- Distribution/Marketing (20%):   Rs. 7,000
+- R&D Allocation (10%):           Rs. 3,500
+---------------------------------------------
+Gross Profit per Device:          Rs. 16,500 (47% margin)
+
+Customer Lifetime Value (3 years):
+- Device:                         Rs. 16,500
+- Subscriptions (Rs. 500/mo x 36):Rs. 18,000
+- Consumables (Rs. 500/mo x 36):  Rs. 18,000
+---------------------------------------------
+Customer LTV:                     Rs. 52,500
+
+Competitive Pricing Advantage
+
+Device      | Price (INR)       | Our Advantage
+------------|-------------------|----------------
+FibroScan   | Rs. 15-35 Lakhs   | 100x cheaper
+MyotonPRO   | Rs. 5-6 Lakhs     | 15x cheaper
+Osstell     | Rs. 3-4 Lakhs     | 10x cheaper
+ResoScan    | Rs. 35,000        | Multi-modal, affordable
+
+Go-To-Market Strategy
+
+Phase 1: Seed (Year 1)
+- Target: Medical colleges, research hospitals (10-20 units)
+- Goal: Clinical validation, case studies
+- Price: Cost recovery (Rs. 25,000)
+
+Phase 2: Early Adopters (Year 2)
+- Target: Private orthopedic clinics, sports medicine
+- Goal: Build reputation, testimonials
+- Price: Market rate (Rs. 35,000)
+
+Phase 3: Scale (Year 3-5)
+- Target: Hospital chains, government tenders
+- Goal: Volume growth, market penetration
+- Price: Tiered (Rs. 30,000 - 75,000)
+
+Funding Requirements
+
+Stage              | Amount (INR)        | Use
+-------------------|---------------------|--------------------------------
+Pre-Seed (Current) | Rs. 5-10 Lakhs      | Prototype, competition
+Seed               | Rs. 50 Lakhs - 1 Cr | Clinical trials, certifications
+Series A           | Rs. 5-10 Cr         | Manufacturing scale-up, team
+Series B           | Rs. 25-50 Cr        | Pan-India expansion, exports
+
+Break-Even Analysis
+
+Fixed Costs (Year 1):
+- R&D / Salaries:     Rs. 20 Lakhs
+- Marketing:          Rs. 5 Lakhs
+- Operations:         Rs. 5 Lakhs
+- Total Fixed:        Rs. 30 Lakhs
+
+Contribution Margin per Device: Rs. 16,500
+Break-Even Units = Rs. 30,00,000 / Rs. 16,500 = 182 devices
+With subscriptions/consumables: ~120-150 devices
+
+────────────────────────────────────────────────────────────────────────────────
+
+AI FEATURES AND CAPABILITIES
+
+Extraordinary AI Features
+
+Feature                | Description                                      | Clinical Value
+-----------------------|--------------------------------------------------|---------------------------
+Explainable AI (SHAP)  | Shows WHY classification was made                | Builds trust, required for FDA
+Personal Baseline      | Learns individual's normal                       | Precision medicine approach
+Signal Quality AI      | Auto-rejects bad measurements                    | Prevents garbage-in-garbage-out
+Healing Prediction     | Predicts future stiffness                        | Answers "when can I walk?"
+Anomaly Detection      | Flags unknown patterns                           | Safety feature
+NL Report Generation   | Auto-generates clinical documentation            | Saves clinician time
+
+ML Model Architecture
+
+- Algorithm: Random Forest Classifier (100 trees, max depth 10)
+- Features: 35 engineered features (spectral + time-domain + damping)
+- Training Data: 180 samples (materials + biological tissue)
+- Output: Class probability + Stiffness Index (0-100) + Confidence score
+
+Feature Categories
+
+Spectral Features: f_peak, A_peak, spectral_centroid, spectral_bandwidth, Q_factor, spectral_rolloff, spectral_flatness, band_energy_ratios
+
+Time-Domain Features: RMS_amplitude, peak_to_peak, decay_time, zero_crossing_rate, crest_factor
+
+Damping Features: damping_ratio, log_decrement, half_power_bandwidth
+
+────────────────────────────────────────────────────────────────────────────────
+
+IMPLEMENTATION PLAN (For Development Phase)
+
+Phase 1: Hardware Assembly (Week 1-2)
+- Procure components (ESP32, ADXL343, LM386, speaker)
+- Assemble circuit on breadboard
+- Verify power rails (3.3V, 5V)
+- Test I2C communication with accelerometer
+- Test DAC output through amplifier
+
+Phase 2: Firmware Development (Week 2-3)
+- Implement chirp waveform generation on ESP32 DAC
+- Implement I2C accelerometer reading
+- Implement USB serial data streaming
+- Add trigger/sync mechanism for excitation-acquisition
+
+Phase 3: PC Software (Week 3-4)
+- Python serial reader for data acquisition
+- Real-time FFT computation (NumPy/SciPy)
+- PyQtGraph spectrogram visualization
+- Feature extraction module
+- Basic classification model (Scikit-learn)
+
+Phase 4: Validation and Demo (Week 4-5)
+- Test on materials (wood, rubber, metal)
+- Test on biological tissue (shin vs calf)
+- Record demo videos
+- Refine UI for presentation
+
+Phase 5: Documentation (Week 5-6)
+- Complete UNISYS document
+- Prepare presentation slides
+- Create poster/visual materials
+
+────────────────────────────────────────────────────────────────────────────────
+
+Document prepared for UNISYS 2026 Competition
+Last updated: January 28, 2026
