@@ -10,16 +10,20 @@ ResoScan is a low-cost, non-invasive, radiation-free diagnostic for monitoring f
 
 ## Live demo
 
-The clinical simulator is deployed at:
+**Primary — Next.js clinical product (recommended for judges):**
 
-➡️ **https://share.streamlit.io/** *(repo `Yashasnagraj/UNISYS`, branch `main`, main file `ortho_simulator/app.py`)*
+➡️ **https://web-bice-phi-71.vercel.app**
 
-Use the sidebar to set bone, fracture type, week of healing, callus stiffness, contact pressure, and implant looseness. The main panel shows PSD chart, waveform, spectrogram, healing timeline, clinical metrics, ML prediction, and a one-page PDF report.
+Premium medical-product UI built for the UNISYS finals. Three routes:
 
-Two additional pages:
+- `/` — landing page (hero, problem, how it works, team)
+- `/dashboard/scan` — **live scan experience**, the centerpiece. Body silhouette with breathing tibia, animated Lorentzian frequency response, healing score, days-to-walk, confidence, recommendation.
+- `/dashboard/patients` — three-patient triptych (Arjun cleared / Priya delayed / Vikram non-union risk) with full Gompertz trajectory chart.
+- `/dashboard/model` — how accurate the AI is, in plain English. 95% accuracy, 25 measurements per scan, explainable AI.
 
-- **Model Validation** — cross-validation results, confusion matrix, ROC curves, feature importance, and dataset methodology.
-- **Patient Tracking** — pick a demo patient, see their device scan history over weeks, view the personalised Gompertz healing curve fit against the population average, and get the **estimated days until they cross the TSI 80% full weight-bearing threshold** with a projected clearance date. Answers the question every fracture patient asks: *"Doctor, when can I walk?"*
+**Fallback — Streamlit clinical simulator (technical depth):**
+
+➡️ The Streamlit app at `ortho_simulator/app.py` remains live and serves as the engineering-deep backup. Configure via the deploy form at https://share.streamlit.io with repo `Yashasnagraj/UNISYS`, branch `main`, main file `ortho_simulator/app.py`.
 
 ---
 
