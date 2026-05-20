@@ -1,32 +1,111 @@
 """
-Demo patient profiles with realistic scan histories.
+Demo patient profiles with realistic, dense scan histories.
 
 Each patient has:
   - Demographics (age, sex, smoker, diabetic, BMI)
   - Fracture metadata (bone, fracture type, date)
-  - A scan history: list of (date, weeks_since_fracture, f_n_hz, tsi_pct,
-    zeta, classification)
-
-The TSI trajectories are sampled along a Gompertz curve with biological
-noise so the personalised fit produces a slightly different curve than the
-population average — exactly what the demo wants to showcase.
+  - A dense scan history covering the FULL healing journey:
+      * twice-weekly scans through the first month
+      * weekly scans afterwards
+    Values follow a personalised Gompertz trajectory with biologically
+    plausible measurement noise so the curve fit produces a curve the demo
+    can visibly differentiate from the population average.
 """
 
 from datetime import date, timedelta
-from typing import List, Dict
+from typing import Dict, List
+
+import numpy as np
 
 
-# Today reference — set explicitly so demo behaviour is reproducible across
-# machines and time zones. Override at call time if needed.
+# Today reference — set explicitly so demo behaviour is reproducible.
 TODAY = date(2026, 5, 20)
 
+# Healthy-tibia reference for f_n conversion. Matches engine/data/bone_profiles.
+F_HEALTHY_HZ = 850.0
+F_BASELINE_HZ = 300.0      # f_n at week 0 (fresh fracture)
+TSI_TO_FN_RANGE = F_HEALTHY_HZ - F_BASELINE_HZ
 
-def _scan(d: date, w: float, f_n: float, tsi: float, zeta: float,
-          classification: str) -> Dict:
-    return {
-        "date": d, "week": w, "f_n_hz": f_n, "tsi_pct": tsi,
-        "zeta": zeta, "classification": classification,
-    }
+
+def _gompertz(t_weeks: float, k: float, t0: float) -> float:
+    """TSI percentage at time t given Gompertz params."""
+    return 100.0 * float(np.exp(-np.exp(-k * (t_weeks - t0))))
+
+
+def _classify(tsi: float) -> str:
+    if tsi >= 75: return "Stable"
+    if tsi >= 40: return "Delayed Union"
+    return "Non-Union"
+
+
+def _zeta_from_tsi(tsi: float) -> float:
+    """Damping ratio decreases as bone stiffens. Matches engine.signal_generator."""
+    # zeta ~ 0.20 at TSI=0, ~0.025 at TSI=100, smooth interpolation
+    return float(0.20 - 0.175 * (tsi / 100.0) ** 1.3)
+
+
+def _fn_from_tsi(tsi: float) -> float:
+    """f_n in Hz from TSI percentage."""
+    return F_BASELINE_HZ + TSI_TO_FN_RANGE * (tsi / 100.0)
+
+
+def _generate_scans(
+    fracture_date: date,
+    weeks_observed: float,
+    k: float,
+    t0: float,
+    noise_pct: float,
+    seed: int,
+    early_cadence_days: int = 3,
+    late_cadence_days: int = 7,
+    early_window_weeks: float = 4.0,
+) -> List[Dict]:
+    """Generate a sequence of scans along a Gompertz curve.
+
+    Twice-weekly cadence through `early_window_weeks` (the rapid-change
+    phase), then weekly thereafter. Adds Gaussian noise on TSI to make the
+    series look like real device readings.
+    """
+    rng = np.random.RandomState(seed)
+    scans: List[Dict] = []
+
+    days_total = int(weeks_observed * 7)
+    early_days = int(early_window_weeks * 7)
+
+    days = []
+    d = 0
+    while d <= days_total:
+        days.append(d)
+        d += early_cadence_days if d < early_days else late_cadence_days
+
+    # Always include the final "today" scan
+    if days[-1] != days_total:
+        days.append(days_total)
+
+    for d_idx, day in enumerate(days):
+        w = day / 7.0
+        tsi_clean = _gompertz(w, k, t0)
+        # Bigger relative noise at low TSI (signal noisier on a soft callus)
+        sigma = noise_pct * (1.0 + 0.5 * (1.0 - tsi_clean / 100.0))
+        tsi_noisy = float(np.clip(tsi_clean + rng.normal(0, sigma), 0.5, 99.9))
+        scans.append({
+            "date": fracture_date + timedelta(days=day),
+            "week": round(w, 2),
+            "f_n_hz": round(_fn_from_tsi(tsi_noisy), 1),
+            "tsi_pct": round(tsi_noisy, 1),
+            "zeta": round(_zeta_from_tsi(tsi_noisy), 3),
+            "classification": _classify(tsi_noisy),
+        })
+    return scans
+
+
+# ============================================================================
+#  Patient registry
+# ============================================================================
+
+_arjun_frac = TODAY - timedelta(weeks=8, days=2)
+_priya_frac = TODAY - timedelta(weeks=10)
+_vikram_frac = TODAY - timedelta(weeks=12)
 
 
 DEMO_PATIENTS: Dict[str, Dict] = {
@@ -40,16 +119,15 @@ DEMO_PATIENTS: Dict[str, Dict] = {
         "bmi": 24.1,
         "bone": "Tibia",
         "fracture_type": "Transverse",
-        "fracture_date": TODAY - timedelta(weeks=8, days=2),
+        "fracture_date": _arjun_frac,
         "hospital": "Ramaiah Memorial Hospital",
         "surgeon": "Dr. R. Krishnan",
-        "scans": [
-            _scan(TODAY - timedelta(weeks=8), 0.3, 320.0, 14.2, 0.180, "Non-Union"),
-            _scan(TODAY - timedelta(weeks=6), 2.3, 410.0, 23.3, 0.140, "Non-Union"),
-            _scan(TODAY - timedelta(weeks=4), 4.3, 575.0, 45.8, 0.085, "Delayed Union"),
-            _scan(TODAY - timedelta(weeks=2), 6.3, 695.0, 66.8, 0.045, "Delayed Union"),
-            _scan(TODAY,                       8.3, 770.0, 82.1, 0.030, "Stable"),
-        ],
+        # Healthy young adult: faster k, earlier inflection
+        "scans": _generate_scans(
+            fracture_date=_arjun_frac,
+            weeks_observed=(TODAY - _arjun_frac).days / 7.0,
+            k=0.48, t0=4.0, noise_pct=2.2, seed=11,
+        ),
     },
     "P-2742 — Priya Iyer (slower, smoker)": {
         "name": "Priya Iyer",
@@ -61,17 +139,15 @@ DEMO_PATIENTS: Dict[str, Dict] = {
         "bmi": 27.8,
         "bone": "Tibia",
         "fracture_type": "Oblique",
-        "fracture_date": TODAY - timedelta(weeks=10),
+        "fracture_date": _priya_frac,
         "hospital": "Ramaiah Memorial Hospital",
         "surgeon": "Dr. S. Patel",
-        "scans": [
-            _scan(TODAY - timedelta(weeks=10), 0.0, 310.0, 13.3, 0.190, "Non-Union"),
-            _scan(TODAY - timedelta(weeks=8),  2.0, 360.0, 17.9, 0.165, "Non-Union"),
-            _scan(TODAY - timedelta(weeks=6),  4.0, 440.0, 26.8, 0.130, "Non-Union"),
-            _scan(TODAY - timedelta(weeks=4),  6.0, 525.0, 38.2, 0.095, "Delayed Union"),
-            _scan(TODAY - timedelta(weeks=2),  8.0, 595.0, 49.0, 0.075, "Delayed Union"),
-            _scan(TODAY,                       10.0, 650.0, 58.5, 0.058, "Delayed Union"),
-        ],
+        # Smoker -> 30% slower union, delayed inflection
+        "scans": _generate_scans(
+            fracture_date=_priya_frac,
+            weeks_observed=(TODAY - _priya_frac).days / 7.0,
+            k=0.30, t0=6.5, noise_pct=2.5, seed=27,
+        ),
     },
     "P-2810 — Vikram Singh (non-union concern)": {
         "name": "Vikram Singh",
@@ -83,18 +159,16 @@ DEMO_PATIENTS: Dict[str, Dict] = {
         "bmi": 30.2,
         "bone": "Tibia",
         "fracture_type": "Comminuted",
-        "fracture_date": TODAY - timedelta(weeks=12),
+        "fracture_date": _vikram_frac,
         "hospital": "Ramaiah Memorial Hospital",
         "surgeon": "Dr. R. Krishnan",
-        "scans": [
-            _scan(TODAY - timedelta(weeks=12), 0.0, 305.0, 12.9, 0.195, "Non-Union"),
-            _scan(TODAY - timedelta(weeks=10), 2.0, 330.0, 15.1, 0.175, "Non-Union"),
-            _scan(TODAY - timedelta(weeks=8),  4.0, 360.0, 17.9, 0.160, "Non-Union"),
-            _scan(TODAY - timedelta(weeks=6),  6.0, 390.0, 21.0, 0.150, "Non-Union"),
-            _scan(TODAY - timedelta(weeks=4),  8.0, 410.0, 23.3, 0.143, "Non-Union"),
-            _scan(TODAY - timedelta(weeks=2),  10.0, 425.0, 25.0, 0.138, "Non-Union"),
-            _scan(TODAY,                       12.0, 440.0, 26.8, 0.135, "Non-Union"),
-        ],
+        # Smoker + diabetic + elderly: severely impaired union, curve stalls
+        # well below the weight-bearing threshold trajectory.
+        "scans": _generate_scans(
+            fracture_date=_vikram_frac,
+            weeks_observed=(TODAY - _vikram_frac).days / 7.0,
+            k=0.06, t0=18.0, noise_pct=1.4, seed=42,
+        ),
     },
 }
 
