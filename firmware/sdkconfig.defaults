@@ -1,0 +1,31 @@
+# ResoScan firmware build defaults — overlaid on top of the IDF baseline.
+# Apply via:  idf.py reconfigure  (or fresh build copies these into sdkconfig)
+
+# Target: ESP32-S3 (dual-core, 8 MB flash recommended)
+CONFIG_IDF_TARGET="esp32s3"
+
+# FreeRTOS tick = 1 kHz for fine-grained scheduling
+CONFIG_FREERTOS_HZ=1000
+CONFIG_FREERTOS_USE_TICKLESS_IDLE=n
+CONFIG_FREERTOS_CHECK_STACKOVERFLOW_CANARY=y
+
+# Pin tasks per RS_CORE_* assignments
+CONFIG_FREERTOS_UNICORE=n
+
+# esp_dsp: enable optimized FFT
+CONFIG_DSP_OPTIMIZED=y
+CONFIG_DSP_MAX_FFT_SIZE=2048
+
+# Log levels (verbose for bring-up, lower in production)
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+
+# Higher SPI master throughput
+CONFIG_SPI_MASTER_IN_IRAM=y
+CONFIG_SPI_MASTER_ISR_IN_IRAM=y
+
+# Heap: enable poisoning during development
+CONFIG_HEAP_POISONING_LIGHT=y
+
+# Brownout detector (medical device safety)
+CONFIG_ESP_BROWNOUT_DET=y
+CONFIG_ESP_BROWNOUT_DET_LVL_SEL_7=y

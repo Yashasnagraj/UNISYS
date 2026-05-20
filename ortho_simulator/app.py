@@ -135,14 +135,12 @@ classification = classify_healing(
     week=week,
 )
 
-# ML classification
+# ML classification — uses the bundled 25-feature RandomForest model
 ml_result = predict_healing_status(
-    f_n=measured_f_n,
-    zeta=measured_zeta,
-    q_factor=measured_q,
-    tsi=tsi,
-    spectral_bandwidth=measured_bandwidth,
-    peak_splitting=has_secondary_peak,
+    signal=scan_data["response"],
+    fs=scan_data["fs"],
+    f_healthy=f_healthy,
+    callus_pct=callus_pct,
 )
 
 # Clinical summary

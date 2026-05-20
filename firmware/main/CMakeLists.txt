@@ -1,0 +1,20 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "chirp_gen.c"
+        "sensor_spi.c"
+        "fft_task.c"
+        "stiffness.c"
+    INCLUDE_DIRS "."
+    REQUIRES
+        freertos
+        driver
+        esp_driver_spi
+        esp_driver_dac
+        esp_driver_gpio
+        esp_dsp
+        esp_timer
+        log
+        nvs_flash
+        heap
+)
