@@ -214,12 +214,96 @@ def get_custom_css() -> str:
         font-size: 0.85rem !important;
     }
 
-    div[data-testid="stMetricValue"] {
-        font-family: 'JetBrains Mono', monospace !important;
+    /* st.metric — make readable on dark navy */
+    [data-testid="stMetric"] {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 10px;
+        padding: 10px 14px;
     }
 
-    h1, h2, h3 {
+    [data-testid="stMetricValue"] {
+        font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
         color: var(--text-primary) !important;
+        font-weight: 700 !important;
+    }
+
+    [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] p {
+        color: var(--text-secondary) !important;
+        font-size: 0.75rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+    }
+
+    [data-testid="stMetricDelta"] {
+        color: var(--text-muted) !important;
+    }
+
+    /* st.dataframe / st.table */
+    [data-testid="stDataFrame"], [data-testid="stTable"] {
+        background: var(--bg-card);
+        border-radius: 8px;
+        border: 1px solid var(--border-subtle);
+    }
+
+    [data-testid="stDataFrame"] div, [data-testid="stTable"] div {
+        color: var(--text-primary);
+    }
+
+    /* st.expander */
+    [data-testid="stExpander"] {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 8px;
+    }
+    [data-testid="stExpander"] summary {
+        color: var(--text-primary) !important;
+    }
+    [data-testid="stExpander"] p {
+        color: var(--text-secondary);
+    }
+
+    /* st.caption */
+    .stCaption, [data-testid="stCaptionContainer"] {
+        color: var(--text-muted) !important;
+    }
+
+    /* st.info / st.success / st.warning / st.error */
+    [data-testid="stAlert"] {
+        background: var(--bg-card) !important;
+        border-left: 4px solid var(--accent-cyan) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Tables inside dataframes */
+    .stDataFrame [role="row"]:nth-child(even) {
+        background: rgba(255,255,255,0.02);
+    }
+
+    /* st.markdown body text on dark background */
+    .stMarkdown, .stMarkdown p, .stMarkdown li {
+        color: var(--text-secondary);
+    }
+    .stMarkdown strong {
+        color: var(--text-primary);
+    }
+    .stMarkdown a {
+        color: var(--accent-cyan);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--text-primary) !important;
+    }
+
+    /* st.selectbox dropdown closed state on dark */
+    [data-baseweb="select"] > div {
+        background: var(--bg-card) !important;
+        border-color: var(--border-subtle) !important;
+    }
+
+    /* st.progress */
+    [data-testid="stProgress"] > div > div {
+        background: var(--accent-cyan) !important;
     }
 
     /* === TITLE BAR === */

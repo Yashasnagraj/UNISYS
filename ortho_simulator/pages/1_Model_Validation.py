@@ -21,6 +21,7 @@ import plotly.graph_objects as go
 
 from ml.feature_extractor import FEATURE_NAMES
 from ml.generate_dataset import LABEL_NAMES
+from ui.styles import get_custom_css
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -38,7 +39,17 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("How accurate is the AI assessment?")
+# Apply the same dark medical theme as the main scan page
+st.markdown(get_custom_css(), unsafe_allow_html=True)
+
+# Themed title bar matching the main page
+st.markdown(
+    '<div class="title-bar">'
+    '<h1>HOW ACCURATE IS THE AI ASSESSMENT?</h1>'
+    '<div class="subtitle">Performance, test results, and what the AI learns from</div>'
+    '</div>',
+    unsafe_allow_html=True,
+)
 st.caption(
     "This page shows exactly how well the assessment AI performs — what it "
     "was trained on, how it was tested, where it gets things right, and "
@@ -125,13 +136,18 @@ with ds_c2:
         counts = df_train["label_name"].value_counts().reindex(LABEL_NAMES)
         fig = go.Figure(go.Bar(
             x=counts.index, y=counts.values,
-            marker_color=["#2ca02c", "#ff7f0e", "#d62728", "#9467bd"],
+            marker_color=["#22c55e", "#eab308", "#ef4444", "#06b6d4"],
             text=counts.values, textposition="outside",
         ))
         fig.update_layout(
-            title="Training set class distribution",
-            xaxis_title="", yaxis_title="Samples",
+            template="plotly_dark",
+            paper_bgcolor="#0a0e17",
+            plot_bgcolor="#0a0e17",
+            title="How the training cases break down across outcomes",
+            xaxis_title="", yaxis_title="Cases",
             height=320, showlegend=False,
+            font=dict(family="Inter, sans-serif", color="#f1f5f9"),
+            yaxis=dict(gridcolor="#1e293b"),
         )
         st.plotly_chart(fig, use_container_width=True)
 

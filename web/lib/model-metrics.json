@@ -1,0 +1,168 @@
+{
+  "model_name": "RandomForest_d14",
+  "trained_at": "2026-05-20T07:20:19.997259Z",
+  "n_train_samples": 4000,
+  "n_holdout_samples": 1000,
+  "n_features": 25,
+  "feature_names": [
+    "f_peak",
+    "A_peak",
+    "spectral_centroid",
+    "spectral_bandwidth",
+    "spectral_rolloff_85",
+    "spectral_flatness",
+    "q_factor",
+    "band_energy_low",
+    "band_energy_mid",
+    "band_energy_high",
+    "peak_splitting_flag",
+    "secondary_peak_ratio",
+    "rms_amplitude",
+    "peak_to_peak",
+    "crest_factor",
+    "zero_crossing_rate",
+    "decay_time_ms",
+    "signal_kurtosis",
+    "signal_skew",
+    "damping_ratio",
+    "log_decrement",
+    "half_power_bandwidth",
+    "mdf",
+    "tsi",
+    "callus_proxy"
+  ],
+  "labels": [
+    "Stable",
+    "Delayed Union",
+    "Non-Union",
+    "Implant Failure"
+  ],
+  "cv_results": {
+    "RandomForest_d10": {
+      "f1_macro_mean": 0.9321344761238329,
+      "f1_macro_std": 0.003416249963654795,
+      "f1_macro_folds": [
+        0.9269445257696867,
+        0.9335213861669409,
+        0.9302495552654498,
+        0.9327687805840983,
+        0.9371881328329892
+      ],
+      "accuracy_mean": 0.95525,
+      "accuracy_std": 0.0012247448713916037
+    },
+    "RandomForest_d14": {
+      "f1_macro_mean": 0.9342457485553078,
+      "f1_macro_std": 0.004970246263492008,
+      "f1_macro_folds": [
+        0.9253286384976526,
+        0.939325736469941,
+        0.9327624951588298,
+        0.9359461519672971,
+        0.9378657206828189
+      ],
+      "accuracy_mean": 0.9577500000000001,
+      "accuracy_std": 0.0016583123951777014
+    },
+    "GradientBoosting": {
+      "f1_macro_mean": 0.9246288908118991,
+      "f1_macro_std": 0.003870627935668176,
+      "f1_macro_folds": [
+        0.9217459672033252,
+        0.9263777954195288,
+        0.9206462570726973,
+        0.9313457895385725,
+        0.9230286448253713
+      ],
+      "accuracy_mean": 0.952,
+      "accuracy_std": 0.002573907535246777
+    }
+  },
+  "cv_best": {
+    "model": "RandomForest_d14",
+    "f1_macro_mean": 0.9342457485553078,
+    "f1_macro_std": 0.004970246263492008,
+    "accuracy_mean": 0.9577500000000001,
+    "accuracy_std": 0.0016583123951777014
+  },
+  "holdout": {
+    "accuracy": 0.953,
+    "per_class": {
+      "Stable": {
+        "precision": 0.9748858447488584,
+        "recall": 0.9726651480637813,
+        "f1": 0.9737742303306728,
+        "support": 439
+      },
+      "Delayed Union": {
+        "precision": 0.797979797979798,
+        "recall": 0.7452830188679245,
+        "f1": 0.7707317073170732,
+        "support": 106
+      },
+      "Non-Union": {
+        "precision": 0.9528023598820059,
+        "recall": 0.9758308157099698,
+        "f1": 0.9641791044776119,
+        "support": 331
+      },
+      "Implant Failure": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 124
+      }
+    },
+    "confusion_matrix": [
+      [
+        427,
+        12,
+        0,
+        0
+      ],
+      [
+        11,
+        79,
+        16,
+        0
+      ],
+      [
+        0,
+        8,
+        323,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        124
+      ]
+    ]
+  },
+  "external_validation": {
+    "accuracy": 0.956,
+    "per_class": {
+      "Stable": {
+        "precision": 0.9809069212410502,
+        "recall": 0.9670588235294117,
+        "f1": 0.9739336492890995
+      },
+      "Delayed Union": {
+        "precision": 0.8608695652173913,
+        "recall": 0.7795275590551181,
+        "f1": 0.8181818181818182
+      },
+      "Non-Union": {
+        "precision": 0.9431818181818182,
+        "recall": 0.9940119760479041,
+        "f1": 0.967930029154519
+      },
+      "Implant Failure": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    }
+  }
+}

@@ -27,6 +27,7 @@ from engine.healing_prediction import (
     predict, fitted_curve_points, population_curve_points,
     TSI_TARGET_PCT, PRIOR_K, PRIOR_T0,
 )
+from ui.styles import get_custom_css
 
 
 st.set_page_config(
@@ -35,7 +36,17 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("Patient Tracking — When Can They Walk?")
+# Apply the same dark medical theme as the main scan page
+st.markdown(get_custom_css(), unsafe_allow_html=True)
+
+# Themed title bar matching the main page
+st.markdown(
+    '<div class="title-bar">'
+    '<h1>WHEN CAN THIS PATIENT WALK?</h1>'
+    '<div class="subtitle">Personalised healing trajectory and days-to-recovery prediction</div>'
+    '</div>',
+    unsafe_allow_html=True,
+)
 st.caption(
     "Pick a patient, see how their bone has been healing across all their "
     "ResoScan visits, and get a prediction of how many days until they're "
@@ -287,13 +298,19 @@ fig.add_vline(
 )
 
 fig.update_layout(
+    template="plotly_dark",
+    paper_bgcolor="#0a0e17",
+    plot_bgcolor="#0a0e17",
     xaxis_title="Weeks since the fracture happened",
     yaxis_title="Bone stiffness (% of healthy)",
-    yaxis=dict(range=[0, 100]),
+    yaxis=dict(range=[0, 100], gridcolor="#1e293b"),
+    xaxis=dict(gridcolor="#1e293b"),
     height=520,
     legend=dict(orientation="h", yanchor="bottom", y=1.02,
-                xanchor="right", x=1),
+                xanchor="right", x=1,
+                bgcolor="rgba(0,0,0,0)"),
     hovermode="x unified",
+    font=dict(family="Inter, sans-serif", color="#f1f5f9"),
 )
 
 st.plotly_chart(fig, use_container_width=True)
