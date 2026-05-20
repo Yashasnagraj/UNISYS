@@ -12,7 +12,8 @@ ResoScan is a low-cost, non-invasive, radiation-free diagnostic for monitoring f
 
 **Primary — Next.js clinical product (recommended for judges):**
 
-➡️ **https://web-bice-phi-71.vercel.app**
+➡️ **Live**: https://web-bice-phi-71.vercel.app
+➡️ **Source**: https://github.com/Yashasnagraj/resoscan
 
 Premium medical-product UI built for the UNISYS finals. Three routes:
 
