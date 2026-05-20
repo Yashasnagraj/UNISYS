@@ -16,7 +16,10 @@ The clinical simulator is deployed at:
 
 Use the sidebar to set bone, fracture type, week of healing, callus stiffness, contact pressure, and implant looseness. The main panel shows PSD chart, waveform, spectrogram, healing timeline, clinical metrics, ML prediction, and a one-page PDF report.
 
-There is a second page, **Model Validation**, exposing cross-validation results, confusion matrix, ROC curves, feature importance, and dataset methodology.
+Two additional pages:
+
+- **Model Validation** — cross-validation results, confusion matrix, ROC curves, feature importance, and dataset methodology.
+- **Patient Tracking** — pick a demo patient, see their device scan history over weeks, view the personalised Gompertz healing curve fit against the population average, and get the **estimated days until they cross the TSI 80% full weight-bearing threshold** with a projected clearance date. Answers the question every fracture patient asks: *"Doctor, when can I walk?"*
 
 ---
 
@@ -27,7 +30,8 @@ ResoScan/
 ├── ortho_simulator/        # Streamlit clinical UI + Python simulation engine
 │   ├── app.py              #   main scan page
 │   ├── pages/              #   Streamlit multipage entries
-│   │   └── 1_Model_Validation.py
+│   │   ├── 1_Model_Validation.py
+│   │   └── 2_Patient_Tracking.py
 │   ├── engine/             #   signal_generator, fft_engine, clinical_metrics, classification
 │   ├── ui/                 #   charts, panels, PDF report
 │   ├── data/               #   bone profiles, fracture profiles, training_dataset.csv
