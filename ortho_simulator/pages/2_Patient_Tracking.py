@@ -35,10 +35,11 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("Patient Tracking & Days-to-Healing Prediction")
+st.title("Patient Tracking — When Can They Walk?")
 st.caption(
-    "Personalised Gompertz curve fit on the patient's scan history. "
-    "Projects the date they cross the TSI 80% full weight-bearing threshold."
+    "Pick a patient, see how their bone has been healing across all their "
+    "ResoScan visits, and get a prediction of how many days until they're "
+    "safe to walk without crutches."
 )
 
 # ============================================================================
@@ -82,16 +83,22 @@ st.subheader("Scan History from ResoScan Device")
 
 scan_df = pd.DataFrame([
     {
-        "Date": s["date"].strftime("%d %b %Y"),
-        "Week": f"{s['week']:.1f}",
-        "f₁ (Hz)": f"{s['f_n_hz']:.1f}",
-        "TSI (%)": f"{s['tsi_pct']:.1f}",
-        "ζ (damping)": f"{s['zeta']:.3f}",
-        "Classification": s["classification"],
+        "Scan date": s["date"].strftime("%d %b %Y"),
+        "Weeks since fracture": f"{s['week']:.1f}",
+        "Bone resonance (Hz)": f"{s['f_n_hz']:.0f}",
+        "Stiffness recovery (%)": f"{s['tsi_pct']:.1f}",
+        "Vibration absorption": f"{s['zeta']:.3f}",
+        "Verdict on the day": s["classification"],
     }
     for s in p["scans"]
 ])
 st.dataframe(scan_df, use_container_width=True, hide_index=True)
+st.caption(
+    "**Stiffness recovery** is how stiff this patient's bone is right now, "
+    "as a percentage of a healthy bone. **Vibration absorption** drops as "
+    "the bone heals (a healthy bone barely absorbs the test vibration; a "
+    "soft, healing bone absorbs a lot)."
+)
 
 
 # ============================================================================
@@ -172,26 +179,39 @@ st.markdown(
 # Detail cards
 m1, m2, m3, m4 = st.columns(4)
 m1.metric(
-    "Current TSI",
-    f"{pred.current_tsi_pct:.1f} %",
-    delta=f"{pred.current_tsi_pct - TSI_TARGET_PCT:+.1f} vs target",
+    "Current bone stiffness",
+    f"{pred.current_tsi_pct:.0f}%",
+    delta=f"{pred.current_tsi_pct - TSI_TARGET_PCT:+.0f}% vs walking-safe target",
+    help="80% is the safe-to-walk threshold."
 )
+_pace_friendly = {
+    "ahead":   "Healing faster than average",
+    "on pace": "Healing at typical speed",
+    "behind":  "Healing slower than average",
+}.get(pred.pace_vs_population, pred.pace_vs_population.title())
 m2.metric(
-    "Pace vs population",
-    pred.pace_vs_population.title(),
-    delta=f"{pred.pace_delta_days:+d} days" if pred.pace_delta_days else "0 days",
+    "How fast is this patient healing?",
+    _pace_friendly,
+    delta=(f"{pred.pace_delta_days:+d} days vs average"
+           if pred.pace_delta_days else "right on average"),
     delta_color=("inverse" if pred.pace_vs_population == "behind"
                  else "normal"),
 )
+_n_scans = len(scan_weeks)
 m3.metric(
-    "Fitted Gompertz rate k",
-    f"{pred.fitted_k:.3f} /wk",
-    delta=f"{(pred.fitted_k - PRIOR_K):+.3f} vs prior",
+    "Scans on file",
+    f"{_n_scans} scans",
+    help="More scans = more confident the prediction.",
 )
+_conf_friendly = {
+    "high":     "High confidence",
+    "moderate": "Moderate confidence",
+    "low":      "Low confidence (few scans yet)",
+}.get(pred.confidence, pred.confidence.title())
 m4.metric(
-    "Fit confidence",
-    pred.confidence.title(),
-    help="Confidence rises with more scans. >=4 scans = high.",
+    "Prediction confidence",
+    _conf_friendly,
+    help="Confidence rises as we collect more scans from this patient.",
 )
 
 
@@ -199,7 +219,7 @@ m4.metric(
 #  Trajectory chart
 # ============================================================================
 
-st.markdown("##### Healing trajectory")
+st.markdown("##### How the bone is healing over time")
 
 # Window extends a couple of weeks beyond either the patient curve target
 # or 20 weeks, whichever is larger.
@@ -212,39 +232,39 @@ pat_weeks, pat_tsi = fitted_curve_points(pred, max_week=max_week)
 
 fig = go.Figure()
 
-# Population-average band (shaded)
+# Population-average band
 fig.add_trace(go.Scatter(
     x=pop_weeks, y=pop_tsi,
     mode="lines",
-    name="Population average",
+    name="What an average patient would look like",
     line=dict(color="#888", dash="dash", width=2),
-    hovertemplate="Week %{x:.1f}<br>Pop TSI %{y:.1f}%<extra></extra>",
+    hovertemplate="Week %{x:.1f}<br>Average %{y:.1f}%<extra></extra>",
 ))
 
 # Personalised fit
 fig.add_trace(go.Scatter(
     x=pat_weeks, y=pat_tsi,
     mode="lines",
-    name="Personal fit (Gompertz)",
+    name="This patient's predicted path",
     line=dict(color=headline_color, width=3),
-    hovertemplate="Week %{x:.1f}<br>Personal TSI %{y:.1f}%<extra></extra>",
+    hovertemplate="Week %{x:.1f}<br>Predicted %{y:.1f}%<extra></extra>",
 ))
 
 # Patient's actual scan points
 fig.add_trace(go.Scatter(
     x=scan_weeks, y=scan_tsi,
     mode="markers+lines",
-    name="Patient's scans",
+    name="Actual scan readings",
     marker=dict(size=12, color="#1f77b4",
                 line=dict(color="white", width=2)),
     line=dict(color="#1f77b4", width=1),
-    hovertemplate="Week %{x:.1f}<br>Measured TSI %{y:.1f}%<extra></extra>",
+    hovertemplate="Week %{x:.1f}<br>Measured %{y:.1f}%<extra></extra>",
 ))
 
 # 80% target line
 fig.add_hline(
     y=TSI_TARGET_PCT, line_dash="dot", line_color="#21c97a", line_width=2,
-    annotation_text="Full weight-bearing threshold (TSI 80%)",
+    annotation_text="Safe-to-walk threshold (80%)",
     annotation_position="top right",
     annotation_font_color="#21c97a",
 )
@@ -254,7 +274,7 @@ if pred.weeks_to_target is not None and pred.weeks_to_target > 0:
     fig.add_vline(
         x=pred.weeks_to_target, line_dash="dot",
         line_color=headline_color, line_width=2,
-        annotation_text=f"Projected clearance: week {pred.weeks_to_target:.1f}",
+        annotation_text=f"Expected clearance: week {pred.weeks_to_target:.1f}",
         annotation_position="bottom right",
         annotation_font_color=headline_color,
     )
@@ -262,13 +282,13 @@ if pred.weeks_to_target is not None and pred.weeks_to_target > 0:
 # Mark current week
 fig.add_vline(
     x=pred.current_week, line_color="#444", line_width=1,
-    annotation_text=f"Now ({pred.current_week:.1f} wk)",
+    annotation_text=f"Today (week {pred.current_week:.1f})",
     annotation_position="top left",
 )
 
 fig.update_layout(
-    xaxis_title="Weeks since fracture",
-    yaxis_title="TSI (%)",
+    xaxis_title="Weeks since the fracture happened",
+    yaxis_title="Bone stiffness (% of healthy)",
     yaxis=dict(range=[0, 100]),
     height=520,
     legend=dict(orientation="h", yanchor="bottom", y=1.02,
@@ -277,50 +297,69 @@ fig.update_layout(
 )
 
 st.plotly_chart(fig, use_container_width=True)
+st.caption(
+    "Blue dots are the actual readings from the ResoScan device on each "
+    "visit. The coloured line is the prediction of how this specific "
+    "patient's bone will keep healing if nothing changes. The grey dashed "
+    "line shows the average patient for comparison. Once a patient crosses "
+    "the green 80% line, they're cleared to walk without crutches."
+)
 
 
 # ============================================================================
 #  Clinical narrative
 # ============================================================================
 
-st.markdown("##### Clinical recommendation")
+st.markdown("##### What to tell the patient")
 
 risk_factors = []
-if p["smoker"]:    risk_factors.append("smoker")
-if p["diabetic"]:  risk_factors.append("diabetic")
-if p["age"] >= 65: risk_factors.append("age ≥ 65")
-risk_phrase = (
-    f" Note risk factors: {', '.join(risk_factors)}." if risk_factors else ""
-)
+if p["smoker"]:    risk_factors.append("smoking")
+if p["diabetic"]:  risk_factors.append("diabetes")
+if p["age"] >= 65: risk_factors.append("age over 65")
+if risk_factors:
+    risk_phrase = (
+        f" Things slowing the healing down: {', '.join(risk_factors)}."
+    )
+else:
+    risk_phrase = ""
 
 if pred.days_remaining is None:
     narrative = (
-        f"**{p['name']}** is tracking well below the projected healing curve "
-        f"with current TSI of **{pred.current_tsi_pct:.1f}%** at week "
-        f"**{pred.current_week:.1f}**. The fitted personal Gompertz rate "
-        f"(k = {pred.fitted_k:.3f}/wk) is insufficient to reach the 80% "
-        "weight-bearing threshold within a clinically reasonable window. "
-        "**Non-union risk — escalate to orthopaedic review.** Consider bone "
-        "stimulator, revision surgery, or workup for metabolic / nutritional "
-        f"causes of impaired union.{risk_phrase}"
+        f"**{p['name']}'s** bone is healing far too slowly. After "
+        f"**{pred.current_week:.0f} weeks** the bone has only recovered "
+        f"**{pred.current_tsi_pct:.0f}%** of normal stiffness, and the "
+        "healing has effectively stalled. At this pace the bone is unlikely "
+        "to be safe to walk on within the next six months. "
+        "**This is a non-union risk — refer to the orthopaedic surgeon "
+        "for urgent review.** Options the surgeon may consider include a "
+        f"bone-growth stimulator, revision surgery, or tests for vitamin / "
+        f"hormone issues that might be holding back healing.{risk_phrase}"
     )
 elif pred.days_remaining == 0:
     narrative = (
-        f"**{p['name']}** has reached TSI {pred.current_tsi_pct:.1f}% at week "
-        f"{pred.current_week:.1f} — at or above the 80% weight-bearing "
-        "threshold. Cleared for **full weight-bearing**. Recommend a "
-        "follow-up scan in 4 weeks to confirm sustained remodeling."
+        f"**Good news for {p['name']}** — after "
+        f"**{pred.current_week:.0f} weeks** the bone has reached "
+        f"**{pred.current_tsi_pct:.0f}%** of normal stiffness. "
+        "That clears the safe-to-walk threshold. "
+        "**Cleared to walk without crutches.** "
+        "Book one more ResoScan check in 4 weeks just to make sure the "
+        "bone keeps getting stronger."
     )
 else:
+    pace_word = {
+        "ahead":   "faster than typical",
+        "on pace": "right on schedule",
+        "behind":  "slower than typical",
+    }.get(pred.pace_vs_population, "")
     narrative = (
-        f"**{p['name']}** is tracking **{pred.pace_vs_population}** the "
-        f"population-average healing curve. The personal Gompertz fit "
-        f"(k = {pred.fitted_k:.3f}/wk, t₀ = {pred.fitted_t0:.1f} wk) "
-        f"projects the patient will cross TSI 80% on "
-        f"**{pred.target_date.strftime('%d %b %Y')}**, "
-        f"approximately **{pred.days_remaining} days** from today. "
-        "Until then: continue partial weight-bearing per current cast / "
-        f"brace protocol. Next ResoScan recommended in 2 weeks.{risk_phrase}"
+        f"**{p['name']}** is healing **{pace_word}**. Based on the trend "
+        f"across the last {len(scan_weeks)} scans, the bone should reach "
+        f"the safe-to-walk point on "
+        f"**{pred.target_date.strftime('%d %b %Y')}** — "
+        f"about **{pred.days_remaining} days** from today "
+        f"(~{pred.weeks_remaining:.0f} weeks). "
+        "Until then: keep using crutches / brace as advised. "
+        f"Book the next ResoScan in 2 weeks to check the trend.{risk_phrase}"
     )
 
 st.markdown(narrative)
@@ -332,9 +371,9 @@ st.markdown("---")
 # ============================================================================
 
 st.caption(
-    f"Personal fit: k = {pred.fitted_k:.3f} /wk, t₀ = {pred.fitted_t0:.2f} wk  •  "
-    f"Population prior: k = {PRIOR_K} /wk, t₀ = {PRIOR_T0} wk  •  "
-    f"Confidence: {pred.confidence}  •  "
-    f"Scans fitted: {len(scan_weeks)}  •  "
-    f"Threshold: TSI {TSI_TARGET_PCT:.0f}% (weight-bearing safety)"
+    f"This prediction is based on **{len(scan_weeks)} scans** of this "
+    f"specific patient. "
+    f"Confidence: **{_conf_friendly.lower()}**. "
+    "The safe-to-walk threshold (80% of healthy bone stiffness) is the "
+    "standard used in published orthopaedic literature."
 )
