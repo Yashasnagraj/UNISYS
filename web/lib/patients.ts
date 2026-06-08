@@ -161,7 +161,7 @@ export const PATIENTS: Patient[] = [
   {
     id: "P-2611",
     key: "arjun",
-    name: "Arjun Mehta",
+    name: "Yashas N",
     age: 28,
     sex: "M",
     smoker: false,

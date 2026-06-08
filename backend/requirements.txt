@@ -1,0 +1,10 @@
+# ResoScan backend — FastAPI + SQLite.
+# numpy / scipy / scikit-learn / pandas are inherited from the ortho_simulator
+# environment (Python 3.10.9). Do NOT pin them here — reuse the validated stack.
+fastapi>=0.110
+uvicorn[standard]>=0.29
+sqlmodel>=0.0.16
+pydantic>=2.6
+pydantic-settings>=2.2
+pyserial>=3.5
+python-multipart>=0.0.9

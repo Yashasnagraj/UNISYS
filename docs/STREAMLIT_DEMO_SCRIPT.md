@@ -144,9 +144,9 @@
 
 **Cue: switch back to the main scan page.**
 
-> "Everything you've just seen runs on an ₹8,000 handheld device. The firmware is in the repo at `firmware/` — ESP-IDF v5, SPI plus DMA acquisition, FFT pinned to the second core, TSI computation on-chip. The simulator is the Python reference for what the silicon does on the device.
+> "Everything you've just seen runs on a ₹2,000 handheld device. The firmware is in the repo at `firmware/` — ESP-IDF v5, SPI plus DMA acquisition, FFT pinned to the second core, TSI computation on-chip. The simulator is the Python reference for what the silicon does on the device.
 >
-> So: a 25-lakh-rupee FibroScan, in a handheld at one-hundredth the cost, with an AI that catches non-union risk weeks before the surgeon would. That's ResoScan."
+> So: a 25-lakh-rupee FibroScan, in a handheld at one-thousandth the cost, with an AI that catches non-union risk weeks before the surgeon would. That's ResoScan."
 
 **[Stop. Take questions.]**
 

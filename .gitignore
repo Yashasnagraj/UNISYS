@@ -39,3 +39,7 @@ build
 .env.local
 .env*.local
 .vercel
+
+# Generated SQLite database (seeded fresh on backend startup)
+*.db
+backend/resoscan.db

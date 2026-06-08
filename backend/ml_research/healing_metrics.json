@@ -1,0 +1,126 @@
+{
+  "model": "GradientBoosting dual-head (classification + regression)",
+  "data": "literature-grounded synthetic (NOT real patients)",
+  "n_patients": 6000,
+  "n_features": 22,
+  "outcome_mix": {
+    "normal": 4038,
+    "delayed": 995,
+    "nonunion": 967
+  },
+  "ablation": {
+    "clinical_only": {
+      "n_features": 16,
+      "f1_macro_mean": 0.5327,
+      "f1_macro_std": 0.0141,
+      "accuracy_mean": 0.7538
+    },
+    "vibration_only": {
+      "n_features": 6,
+      "f1_macro_mean": 0.6308,
+      "f1_macro_std": 0.0112,
+      "accuracy_mean": 0.7838
+    },
+    "fused": {
+      "n_features": 22,
+      "f1_macro_mean": 0.706,
+      "f1_macro_std": 0.0224,
+      "accuracy_mean": 0.8205
+    }
+  },
+  "vibration_lift_macro_f1": 0.1733,
+  "classification_holdout": {
+    "accuracy": 0.8233,
+    "macro_f1": 0.7162,
+    "per_class": {
+      "normal": {
+        "precision": 0.8691,
+        "recall": 0.9369,
+        "f1": 0.9017,
+        "support": 808
+      },
+      "delayed": {
+        "precision": 0.5385,
+        "recall": 0.3518,
+        "f1": 0.4255,
+        "support": 199
+      },
+      "nonunion": {
+        "precision": 0.809,
+        "recall": 0.8342,
+        "f1": 0.8214,
+        "support": 193
+      }
+    },
+    "confusion_matrix": [
+      [
+        757,
+        40,
+        11
+      ],
+      [
+        102,
+        70,
+        27
+      ],
+      [
+        12,
+        20,
+        161
+      ]
+    ],
+    "labels": [
+      "normal",
+      "delayed",
+      "nonunion"
+    ]
+  },
+  "regression_holdout": {
+    "weeks_to_walk_mae": 6.964,
+    "r2": 0.6339,
+    "note": "weeks capped at 52 for non-unions"
+  },
+  "top_features": [
+    {
+      "feature": "f1_slope",
+      "importance": 0.4716
+    },
+    {
+      "feature": "zeta_wk6",
+      "importance": 0.1876
+    },
+    {
+      "feature": "f1_wk6",
+      "importance": 0.0753
+    },
+    {
+      "feature": "rust_wk6",
+      "importance": 0.0708
+    },
+    {
+      "feature": "leg_nui",
+      "importance": 0.0625
+    },
+    {
+      "feature": "nurd",
+      "importance": 0.0465
+    },
+    {
+      "feature": "fracting",
+      "importance": 0.028
+    },
+    {
+      "feature": "zeta_slope",
+      "importance": 0.0214
+    },
+    {
+      "feature": "sfi_wk6",
+      "importance": 0.0098
+    },
+    {
+      "feature": "age",
+      "importance": 0.007
+    }
+  ],
+  "honesty_note": "Trained on synthetic data grounded in published parameters (see docs/TSI_PREDICTION_LITERATURE.md). Real-patient validation is pending a clinical dataset. The ablation shows the vibration telemetry adds +0.173 macro-F1 over the validated clinical scores alone."
+}

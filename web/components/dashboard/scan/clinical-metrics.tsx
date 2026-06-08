@@ -1,12 +1,14 @@
 "use client";
 
 import type { ClinicalMetrics } from "@/lib/scan";
+import { InfoTip } from "@/components/ui/info-tip";
 
 export function ClinicalMetricsGrid({ m }: { m: ClinicalMetrics }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <Metric
         label="Tibial Stiffness Index"
+        tipKey="tsi"
         value={m.tsi.toFixed(1)}
         unit="%"
         sub="Bone stiffness vs healthy reference"
@@ -15,12 +17,14 @@ export function ClinicalMetricsGrid({ m }: { m: ClinicalMetrics }) {
       <RustMetric m={m} />
       <Metric
         label="Resonant frequency"
+        tipKey="fPeak"
         value={m.fn.toFixed(0)}
         unit="Hz"
         sub="Higher = stiffer bone"
       />
       <Metric
         label="Damping ratio (ζ)"
+        tipKey="zeta"
         value={m.zeta.toFixed(3)}
         sub={
           m.zeta < 0.04 ? "Solid · healed energy retention"
@@ -30,11 +34,13 @@ export function ClinicalMetricsGrid({ m }: { m: ClinicalMetrics }) {
       />
       <Metric
         label="Q-Factor"
+        tipKey="qFactor"
         value={m.qFactor.toFixed(1)}
         sub={m.qFactor > 14 ? "Sharp · stiff bone" : m.qFactor > 6 ? "Moderate" : "Broad · soft callus"}
       />
       <Metric
         label="Half-power bandwidth"
+        tipKey="bandwidth"
         value={m.bandwidthHz.toFixed(0)}
         unit="Hz"
         sub="Width of the resonance at half-power"
@@ -44,11 +50,13 @@ export function ClinicalMetricsGrid({ m }: { m: ClinicalMetrics }) {
 }
 
 function Metric({
-  label, value, unit, sub, emphasis = false,
-}: { label: string; value: string; unit?: string; sub?: string; emphasis?: boolean; }) {
+  label, value, unit, sub, emphasis = false, tipKey,
+}: { label: string; value: string; unit?: string; sub?: string; emphasis?: boolean; tipKey?: string; }) {
   return (
     <div className="surface p-5">
-      <div className="text-[10px] uppercase tracking-[0.18em] text-text-faint">{label}</div>
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-text-faint">
+        {label} {tipKey && <InfoTip k={tipKey} side="bottom" />}
+      </div>
       <div className={"mt-1 flex items-baseline gap-1 font-mono leading-none " + (emphasis ? "text-text" : "text-text")}>
         <span className={emphasis ? "text-4xl font-semibold" : "text-2xl font-semibold"}>{value}</span>
         {unit && <span className="text-base text-text-faint">{unit}</span>}
@@ -65,8 +73,8 @@ function RustMetric({ m }: { m: ClinicalMetrics }) {
   const labelOf = (n: number) => (n >= 9 ? "Bridging callus" : n >= 6 ? "Early callus" : "No callus");
   return (
     <div className="surface p-5">
-      <div className="text-[10px] uppercase tracking-[0.18em] text-text-faint">
-        RUST score (cortex)
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-text-faint">
+        RUST score (cortex) <InfoTip k="rust" side="bottom" />
       </div>
       <div className="mt-1 flex items-baseline gap-2">
         <span className="font-mono text-2xl font-semibold text-text">{m.rust}</span>

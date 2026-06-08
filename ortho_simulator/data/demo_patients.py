@@ -109,8 +109,8 @@ _vikram_frac = TODAY - timedelta(weeks=12)
 
 
 DEMO_PATIENTS: Dict[str, Dict] = {
-    "P-2611 — Arjun Mehta (healing on pace)": {
-        "name": "Arjun Mehta",
+    "P-2611 — Yashas N (real device)": {
+        "name": "Yashas N",
         "patient_id": "P-2611",
         "age": 28,
         "sex": "M",

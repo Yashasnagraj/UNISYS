@@ -43,8 +43,8 @@ export function LandingHero() {
         {/* mini stat strip */}
         <div className="mt-12 grid grid-cols-3 gap-8 border-t border-line pt-5 md:gap-16">
           <Stat value="95%" label="AI accuracy" />
-          <Stat value="₹8 000" label="Bill of materials" />
-          <Stat value="100×" label="Cheaper than alternatives" />
+          <Stat value="₹2 000" label="Bill of materials" />
+          <Stat value="1000×" label="Cheaper than alternatives" />
         </div>
       </div>
     </section>
