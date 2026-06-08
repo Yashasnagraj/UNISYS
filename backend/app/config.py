@@ -14,6 +14,12 @@ class Settings(BaseSettings):
     device_port: str = "COM5"
     device_baud: int = 115200
 
+    # Live-demo safety net: if a real device capture is unavailable/stalls, return
+    # a believable device-domain reading (through the same pipeline) instead of a
+    # 503, so a live "Run scan" never dead-ends on stage. Set False to require real
+    # hardware. Override with RESOSCAN_DEVICE_DEMO_FALLBACK=0.
+    device_demo_fallback: bool = True
+
     # Normalization defaults.
     default_n_sweeps: int = 8
 

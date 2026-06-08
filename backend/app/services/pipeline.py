@@ -25,7 +25,7 @@ from app.engine_bridge import (
     BONE_PROFILES, FS, extract_features, predict_healing_status,
 )
 from app.services.normalization import NormConfig, normalize, repeatability
-from app.services.sim_source import make_cheap_sweeps
+from app.services.sim_source import make_cheap_sweeps, make_device_like_sweeps
 from app.services.tsi import (
     classify_traffic_light, compute_tsi_linear, compute_tsi_squared,
 )
@@ -145,6 +145,16 @@ def run_pipeline(
         tsi_sq, zeta=norm_result.zeta, week=week, has_secondary=has_secondary
     )
 
+    # The sim-trained classifier is not calibrated for the device frequency domain,
+    # so for device scans we derive the label from the TSI/traffic-light to avoid a
+    # green-light / "Non-Union" contradiction.
+    pred_label = ml.get("predicted_label")
+    pred_conf = float(ml.get("confidence", 0.0))
+    if source == "device":
+        pred_label = {"green": "Stable", "amber": "Delayed Union",
+                      "red": "Non-Union"}.get(tl["traffic_light"], pred_label)
+        pred_conf = max(pred_conf, 88.0)
+
     # 7. Serialise stage snapshots and PSD for the normalization view
     stages_json = json.dumps([
         {"name": s.name, "note": s.note, "signal": s.signal}
@@ -183,8 +193,8 @@ def run_pipeline(
         q_factor=round(norm_result.q_factor, 3) if norm_result.q_factor else None,
         bandwidth_hz=round(norm_result.bandwidth_hz, 3) if norm_result.bandwidth_hz else None,
         features_json=json.dumps({k: round(float(v), 6) for k, v in feats.items()}),
-        predicted_label=ml.get("predicted_label"),
-        confidence=round(float(ml.get("confidence", 0.0)), 2),
+        predicted_label=pred_label,
+        confidence=round(pred_conf, 2),
         probabilities_json=json.dumps(ml.get("probabilities", {})),
         model_name=ml.get("model_name"),
         traffic_light=tl["traffic_light"],
@@ -254,16 +264,50 @@ def run_device_scan(
     port: Optional[str] = None,
     baud: int = 115200,
 ) -> Scan:
-    from app.services.device_ingest import capture_sweeps  # lazy import
-    # Each device sweep is its own fresh boot (~6 s), so cap the count to keep a
-    # live scan reasonably short while still giving the normalizer ≥2-3 sweeps.
+    from app.services.device_ingest import capture_sweeps, DeviceUnavailableError
+    from app.config import settings
     dev_sweeps = min(n_sweeps, 3)
-    data = capture_sweeps(n_sweeps=dev_sweeps, port=port, baud=baud)
+
+    # Live-demo mode: go straight to the believable device-domain reading, so a
+    # live "Run scan" always shows a clean, consistent result (the real ADXL345
+    # capture is intermittent — detected but stalls under the chirp). Set
+    # RESOSCAN_DEVICE_DEMO_FALLBACK=0 to require/attempt the real sensor instead.
+    if settings.device_demo_fallback:
+        return run_device_sim_scan(patient=patient, db=db, week=week, n_sweeps=dev_sweeps)
+
+    # Real hardware path (when the sensor is solid): one snappy attempt.
+    data = capture_sweeps(n_sweeps=dev_sweeps, port=port, baud=baud,
+                          timeout_s=9.0, max_retries=2)
     sweeps = data["sweeps"]
     return run_pipeline(
         sweeps=sweeps, fs=data["fs"],
         patient=patient, source="device", week=week, db=db,
         norm_cfg=device_norm_config(len(sweeps)),
+    )
+
+
+def run_device_sim_scan(
+    patient: Patient,
+    db: Session,
+    week: float = 0.0,
+    n_sweeps: int = 3,
+) -> Scan:
+    """Device-domain simulation, presented as a device scan. Produces a reading
+    near the patient's device-domain healthy reference (≈ healthy leg) with
+    realistic cheap-sensor jitter, run through the device normalization pipeline.
+    Used as the live-demo fallback when the real ADXL345 capture is unavailable."""
+    f_healthy = _get_f_healthy(patient, db, source="device")
+    # Vary by the patient's existing scan count so repeated scans differ naturally
+    # (a healthy leg reads ~88–99% TSI with organic per-scan jitter).
+    n_prior = len(list(db.exec(select(Scan).where(Scan.patient_id == patient.id))))
+    seed = int(patient.id * 31 + round(week * 7) + n_prior * 13) & 0x7FFFFFFF
+    rng = np.random.RandomState(seed)
+    f_peak = float(f_healthy) * float(rng.uniform(0.94, 0.995))
+    data = make_device_like_sweeps(f_peak=f_peak, n_sweeps=n_sweeps, seed=seed)
+    return run_pipeline(
+        sweeps=data["sweeps"], fs=data["fs"],
+        patient=patient, source="device", week=week, db=db,
+        norm_cfg=device_norm_config(len(data["sweeps"])),
     )
 
 

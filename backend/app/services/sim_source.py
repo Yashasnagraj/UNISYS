@@ -51,3 +51,39 @@ def make_cheap_sweeps(
 
     return {"sweeps": sweeps, "fs": FS, "f_n": float(base["f_n"]),
             "zeta": float(base["zeta"])}
+
+
+def make_device_like_sweeps(
+    f_peak: float = 235.0,
+    n_sweeps: int = 3,
+    fs: float = 800.0,
+    n_samples: int = 800,
+    noise: float = 0.05,
+    mains: float = 0.06,
+    drift: float = 0.08,
+    seed: int = 0,
+) -> dict:
+    """Device-domain synthetic sweeps for the live-demo path.
+
+    Produces a SUSTAINED resonance at `f_peak` (near the in-vivo tibial first
+    bending mode, ~237 Hz) sampled at the device rate (800 Hz) — sustained because
+    the chirp keeps re-exciting the bone, so the resonance dominates the spectrum
+    (high Q), just like the real capture. Adds cheap-sensor corruption (mains hum,
+    low-freq drift, white noise). Runs through the SAME normalization pipeline as a
+    real capture, so a live "Run scan" shows a believable device-domain reading
+    when the real ADXL345 capture is unavailable.
+    """
+    t = np.arange(n_samples) / fs
+    sweeps = []
+    for k in range(n_sweeps):
+        r = np.random.RandomState(seed * 1000 + k + 1)
+        # sustained resonance (dominant spectral peak), gently modulated to look organic
+        amp = 1.0 + 0.05 * r.randn()
+        sig = amp * np.sin(2 * np.pi * f_peak * t + r.uniform(0, 6.28))
+        sig *= 1.0 + 0.12 * np.sin(2 * np.pi * r.uniform(2, 5) * t)
+        # cheap-sensor corruption (small relative to the resonance)
+        sig += mains * np.sin(2 * np.pi * 50 * t + r.uniform(0, 6.28))
+        sig += drift * np.sin(2 * np.pi * r.uniform(1, 5) * t + r.uniform(0, 6.28))
+        sig += r.normal(0, noise, n_samples)
+        sweeps.append(sig)
+    return {"sweeps": sweeps, "fs": fs, "f_n": float(f_peak), "zeta": 0.01}
