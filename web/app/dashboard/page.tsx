@@ -7,6 +7,7 @@ import type { ApiPatient, ApiScanDetail } from "@/lib/api";
 import { api } from "@/lib/api";
 import { PATIENTS } from "@/lib/patients";
 
+import { FadeIn } from "@/components/ui/motion";
 import { SubviewTabs } from "@/components/dashboard/subview-tabs";
 import { DeviceChip } from "@/components/dashboard/device-chip";
 import { ScanView } from "@/components/dashboard/views/scan-view";
@@ -15,6 +16,7 @@ import { StatusView } from "@/components/dashboard/views/status-view";
 import { ReportView } from "@/components/dashboard/views/report-view";
 import { TrendView } from "@/components/dashboard/views/trend-view";
 import { ModelView } from "@/components/dashboard/views/model-view";
+import { KnowledgeGraphView } from "@/components/dashboard/views/knowledge-graph-view";
 
 function offlinePatient(code: string): ApiPatient {
   const p = PATIENTS.find((x) => x.key === code || x.id === code) ?? PATIENTS[0];
@@ -45,8 +47,9 @@ function DashboardInner() {
   const [patient, setPatient] = useState<ApiPatient | null>(null);
   const [scanId, setScanId] = useState<number | null>(null);
   const [lastScan, setLastScan] = useState<ApiScanDetail | null>(null);
+  const [toast, setToast] = useState<{ id: number; tsi: number | null; source: string } | null>(null);
 
-  useEffect(() => {
+  const refreshPatient = useCallback(() => {
     if (isOffline) { setPatient(offlinePatient(patientParam)); return; }
     api.patients()
       .then((list) => {
@@ -59,13 +62,23 @@ function DashboardInner() {
       .catch(() => setPatient(offlinePatient(patientParam)));
   }, [patientParam, isOffline]);
 
+  useEffect(() => { refreshPatient(); }, [refreshPatient]);
+
   // Reset scan when patient changes
   useEffect(() => { setScanId(null); setLastScan(null); }, [patientParam]);
 
   const handleScanCreated = useCallback((id: number, scan: ApiScanDetail) => {
     setScanId(id);
     setLastScan(scan);
-  }, []);
+    // Reflect the newly-stored scan live across the whole dashboard: refresh this
+    // patient's header, and broadcast so the rail (and any listener) re-fetches.
+    refreshPatient();
+    setToast({ id, tsi: scan.tsiPct, source: scan.source });
+    window.setTimeout(() => setToast((t) => (t && t.id === id ? null : t)), 3500);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("reso:scan-created", { detail: { id, scan } }));
+    }
+  }, [refreshPatient]);
 
   if (!patient) {
     return (
@@ -79,6 +92,23 @@ function DashboardInner() {
 
   return (
     <div className="flex h-full flex-col">
+
+      {/* Live "scan stored" pop */}
+      {toast && (
+        <div
+          className="pointer-events-none fixed right-5 top-5 z-50 flex items-center gap-2 rounded-lg border px-4 py-2.5 shadow-lg"
+          style={{ borderColor: "rgba(0,255,170,0.35)", background: "rgba(0,40,36,0.95)" }}
+        >
+          <span className="h-2 w-2 rounded-full" style={{ background: "var(--accent)" }} />
+          <span className="text-[12.5px] text-text">
+            <span style={{ color: "var(--accent)" }}>
+              {toast.source === "device" ? "Live scan stored" : "Scan stored"}
+            </span>
+            {" "}· #{toast.id}
+            {toast.tsi != null && <> · {Math.round(toast.tsi)}% healing index</>}
+          </span>
+        </div>
+      )}
 
       {/* Patient detail header */}
       <div className="flex items-center gap-4 border-b border-line px-5 py-3">
@@ -108,20 +138,23 @@ function DashboardInner() {
       {/* Sub-view tabs */}
       <SubviewTabs rightSlot={<DeviceChip />} hasScan={scanId != null} />
 
-      {/* Content area */}
+      {/* Content area — subtle reveal on each view switch */}
       <div className="flex-1 overflow-auto">
-        {view === "scan" && (
-          <ScanView patient={patient} onScanCreated={handleScanCreated} offline={isOffline} />
-        )}
-        {view === "normalization" && (
-          <NormalizationView scanId={scanId} offline={isOffline} />
-        )}
-        {view === "status" && <StatusView patient={patient} scan={lastScan} />}
-        {view === "report" && (
-          <ReportView patient={patient} scan={lastScan} scanId={scanId} />
-        )}
-        {view === "trend" && <TrendView patient={patient} />}
-        {view === "model" && <ModelView />}
+        <FadeIn key={view} className="min-h-full">
+          {view === "scan" && (
+            <ScanView patient={patient} onScanCreated={handleScanCreated} offline={isOffline} />
+          )}
+          {view === "normalization" && (
+            <NormalizationView scanId={scanId} offline={isOffline} />
+          )}
+          {view === "status" && <StatusView patient={patient} scan={lastScan} />}
+          {view === "graph" && <KnowledgeGraphView patient={patient} scanId={scanId} />}
+          {view === "report" && (
+            <ReportView patient={patient} scan={lastScan} scanId={scanId} />
+          )}
+          {view === "trend" && <TrendView patient={patient} />}
+          {view === "model" && <ModelView />}
+        </FadeIn>
       </div>
     </div>
   );

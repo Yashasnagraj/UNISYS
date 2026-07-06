@@ -90,6 +90,105 @@ export interface ApiDeviceStatus {
   description: string;
 }
 
+// ── Knowledge graph / causal / human-in-the-loop ─────────────────────────────
+
+export interface ApiSimilarCase {
+  scanId: number;
+  patientId: number;
+  patientCode: string | null;
+  patientName: string | null;
+  week: number;
+  tsiPct: number | null;
+  predictedLabel: string | null;
+  confirmedOutcome: string | null;
+  comorbidities: string[];
+  distance: number;
+  score: number;
+  hasOutcome: boolean;
+}
+
+export interface ApiSimilarCases {
+  scanId: number;
+  cases: ApiSimilarCase[];
+}
+
+export interface ApiCausalFactor {
+  factor: string;
+  value: string;
+  sign: number;
+  weight: number;
+  citation: string;
+}
+
+export interface ApiCausalExplanation {
+  scanId: number;
+  verdict: string;
+  nSimilar: number;
+  activeFactors: ApiCausalFactor[];
+  narrative: string;
+}
+
+export interface ApiGraphNode {
+  id: string;
+  type: string;
+  label?: string;
+  [k: string]: unknown;
+}
+
+export interface ApiGraphEdge {
+  source: string;
+  target: string;
+  type: string;
+  [k: string]: unknown;
+}
+
+export interface ApiEgoGraph {
+  patientId: number;
+  nodes: ApiGraphNode[];
+  edges: ApiGraphEdge[];
+}
+
+export interface ApiModelVersion {
+  id: number;
+  version: number;
+  syntheticN: number;
+  clinicianPairs: number;
+  macroF1Holdout: number;
+  championF1: number | null;
+  promoted: boolean;
+  isActive: boolean;
+  notes: string | null;
+  createdAt: string | null;
+}
+
+export interface ApiModelVersions {
+  activeVersion: number | null;
+  versions: ApiModelVersion[];
+}
+
+export interface ApiRetrainResult {
+  championF1: number;
+  challengerF1: number;
+  promoted: boolean;
+  newVersion: number;
+  clinicianPairs: number;
+  syntheticN: number;
+}
+
+export interface ApiConfirmResponse {
+  scanId: number;
+  feedbackId: number;
+  agree: boolean;
+  overrideLabel: string | null;
+}
+
+export interface ApiOutcomeResponse {
+  outcomeId: number;
+  patientId: number;
+  scanId: number | null;
+  trueLabel: string;
+}
+
 // ── Fetch helpers ─────────────────────────────────────────────────────────────
 
 async function apiFetch<T>(
@@ -142,4 +241,37 @@ export const api = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     }),
+
+  similar: (id: number, k = 5) =>
+    apiFetch<ApiSimilarCases>(`/api/scans/${id}/similar?k=${k}`),
+
+  causal: (id: number) =>
+    apiFetch<ApiCausalExplanation>(`/api/scans/${id}/causal`),
+
+  patientGraph: (patientId: number) =>
+    apiFetch<ApiEgoGraph>(`/api/graph/patient/${patientId}`),
+
+  confirmScan: (id: number, body: {
+    agree: boolean; overrideLabel?: string | null;
+    clinician?: string | null; notes?: string | null;
+  }) =>
+    apiFetch<ApiConfirmResponse>(`/api/scans/${id}/confirm`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }),
+
+  recordOutcome: (id: number, body: {
+    trueLabel: string; weeksToWalk?: number | null; rust16w?: number | null;
+  }) =>
+    apiFetch<ApiOutcomeResponse>(`/api/scans/${id}/outcome`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }),
+
+  modelVersions: () => apiFetch<ApiModelVersions>("/api/model/versions"),
+
+  retrain: () =>
+    apiFetch<ApiRetrainResult>("/api/model/retrain", { method: "POST" }),
 };

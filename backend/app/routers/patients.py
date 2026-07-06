@@ -15,8 +15,11 @@ router = APIRouter(prefix="/api/patients", tags=["patients"])
 
 
 def _scans_for(session: Session, patient_id: int) -> list[Scan]:
+    # Order by (date, id) so the newest scan is truly last — scan_date is a DATE,
+    # so same-day scans tie; id is monotonic creation order and breaks the tie.
     return list(session.exec(
-        select(Scan).where(Scan.patient_id == patient_id).order_by(Scan.scan_date)
+        select(Scan).where(Scan.patient_id == patient_id)
+        .order_by(Scan.scan_date, Scan.id)
     ))
 
 

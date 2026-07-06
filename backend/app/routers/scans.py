@@ -8,14 +8,20 @@ from sqlmodel import Session, select
 
 from app.config import settings
 from app.db.database import get_session
-from app.db.models import Patient, Scan
+from app.db.models import Patient, RawSweepSet, Scan
 from app.schemas.scan import (
-    DeviceScanRequest, DeviceStatus, NormalizationDetail, RepeatabilityDetail,
-    ScanDetail, ScanRequest, SimScanRequest, StageSnapshotOut, UploadScanRequest,
+    DeviceIngestRequest, DeviceScanRequest, DeviceStatus, NormalizationDetail,
+    RawSweepsDetail, RepeatabilityDetail, ReplayScanRequest, ScanDetail,
+    ScanRequest, SimScanRequest, StageSnapshotOut, UploadScanRequest,
 )
+from app.schemas.graph import (
+    ConfirmRequest, ConfirmResponse, OutcomeRequest, OutcomeResponse,
+)
+from app.services import feedback
 from app.services.device_ingest import DeviceUnavailableError, device_status
 from app.services.pipeline import (
-    run_device_calibration, run_device_scan, run_sim_scan, run_upload_scan,
+    run_device_calibration, run_device_scan, run_ingest_scan, run_replay_scan,
+    run_sim_scan, run_upload_scan,
 )
 
 router = APIRouter(tags=["scans"])
@@ -76,6 +82,15 @@ def create_scan(body: ScanRequest, db: Session = Depends(get_session)):
             patient=patient, db=db,
             samples=body.samples, fs=body.fs, week=body.week,
         )
+
+    elif isinstance(body, ReplayScanRequest):
+        patient = _resolve_patient(body.patient_id, db)
+        try:
+            scan = run_replay_scan(
+                patient=patient, db=db, fixture=body.fixture, week=body.week,
+            )
+        except (FileNotFoundError, ValueError) as exc:
+            raise HTTPException(404, detail=str(exc))
 
     else:
         raise HTTPException(400, "unknown scan source")
@@ -163,6 +178,130 @@ def get_repeatability(scan_id: int, db: Session = Depends(get_session)):
         improvement_factor=improvement,
         snr_gain_db=s.snr_gain_db or 0.0,
     )
+
+
+# ── GET /api/scans/{id}/sweeps ───────────────────────────────────────────────
+
+# Display caps for the raw-sweep viz (the stored blob can be 50×800 samples).
+_SWEEPS_MAX_TRACES = 12
+_SWEEPS_MAX_SAMPLES = 200
+
+
+@router.get("/api/scans/{scan_id}/sweeps", response_model=RawSweepsDetail)
+def get_sweeps(scan_id: int, db: Session = Depends(get_session)):
+    """Return the stored raw sweeps for a scan (downsampled) for a raw-vs-replay
+    overlay. 404 if this scan predates raw-sweep persistence."""
+    import base64
+
+    import numpy as np
+
+    s = db.get(Scan, scan_id)
+    if not s:
+        raise HTTPException(404, f"scan {scan_id} not found")
+    rss = db.exec(
+        select(RawSweepSet).where(RawSweepSet.session_id == s.session_id)
+    ).first()
+    if not rss:
+        raise HTTPException(404, "raw sweeps not stored for this scan")
+
+    arr = np.frombuffer(base64.b64decode(rss.sweeps_b64), dtype=np.float32)
+    arr = arr.reshape(rss.n_sweeps, rss.n_samples)
+
+    traces = arr[:_SWEEPS_MAX_TRACES]
+    if rss.n_samples > _SWEEPS_MAX_SAMPLES:
+        idx = np.linspace(0, rss.n_samples - 1, _SWEEPS_MAX_SAMPLES).astype(int)
+        traces = traces[:, idx]
+
+    return RawSweepsDetail(
+        scan_id=scan_id, fs_hz=rss.fs_hz,
+        n_sweeps=rss.n_sweeps, n_samples=rss.n_samples,
+        sweeps=[[round(float(x), 5) for x in row] for row in traces],
+    )
+
+
+# ── POST /api/scans/{id}/confirm ─────────────────────────────────────────────
+
+@router.post("/api/scans/{scan_id}/confirm", response_model=ConfirmResponse, status_code=201)
+def confirm_scan(scan_id: int, body: ConfirmRequest, db: Session = Depends(get_session)):
+    """Clinician agrees with, or overrides, a scan's ML verdict. An override
+    label (one of LABEL_NAMES) becomes a training target for the next retrain."""
+    if not db.get(Scan, scan_id):
+        raise HTTPException(404, f"scan {scan_id} not found")
+    try:
+        fb = feedback.record_feedback(
+            db, scan_id=scan_id, agree=body.agree,
+            override_label=body.override_label, clinician=body.clinician,
+            notes=body.notes,
+        )
+    except ValueError as exc:
+        raise HTTPException(422, detail=str(exc))
+    return ConfirmResponse(scan_id=scan_id, feedback_id=fb.id,
+                           agree=fb.agree, override_label=fb.override_label)
+
+
+# ── POST /api/scans/{id}/outcome ─────────────────────────────────────────────
+
+@router.post("/api/scans/{scan_id}/outcome", response_model=OutcomeResponse, status_code=201)
+def record_scan_outcome(scan_id: int, body: OutcomeRequest, db: Session = Depends(get_session)):
+    """Record the confirmed ground-truth healing outcome for a scan — the label
+    the single-scan classifier learns from on the next retrain."""
+    scan = db.get(Scan, scan_id)
+    if not scan:
+        raise HTTPException(404, f"scan {scan_id} not found")
+    try:
+        outcome = feedback.record_outcome(
+            db, patient_id=scan.patient_id, scan_id=scan_id,
+            true_label=body.true_label, weeks_to_walk=body.weeks_to_walk,
+            rust_16w=body.rust_16w,
+        )
+    except ValueError as exc:
+        raise HTTPException(422, detail=str(exc))
+    return OutcomeResponse(outcome_id=outcome.id, patient_id=outcome.patient_id,
+                           scan_id=outcome.scan_id, true_label=outcome.true_label)
+
+
+# ── POST /api/device/ingest (device pushes a real capture over Wi-Fi) ─────────
+
+@router.post("/api/device/ingest", response_model=ScanDetail, status_code=201)
+def device_ingest(body: DeviceIngestRequest, db: Session = Depends(get_session)):
+    """The ESP32 posts a REAL capture over Wi-Fi — parsed samples (samples/sweeps
+    + fs) or the raw firmware text block (text). Runs the same pipeline as a
+    wired scan."""
+    # resolve patient by id or code
+    patient = None
+    if body.patient_id is not None:
+        patient = db.get(Patient, body.patient_id)
+    elif body.patient_code:
+        patient = db.exec(
+            select(Patient).where(Patient.patient_code == body.patient_code)
+        ).first()
+    if not patient:
+        raise HTTPException(404, "patient not found (patientId or patientCode required)")
+
+    # assemble sweeps + fs from whichever form the device sent
+    fs = body.fs
+    if body.text:
+        from app.services.device_ingest import parse_capture_dump
+        parsed = parse_capture_dump(body.text)
+        sweeps = parsed["sweeps"]
+        fs = fs or parsed["fs"]
+    elif body.sweeps:
+        sweeps = body.sweeps
+    elif body.samples:
+        sweeps = [body.samples]
+    else:
+        raise HTTPException(422, "provide samples, sweeps, or text")
+    if not sweeps:
+        raise HTTPException(422, "no usable samples in payload")
+    if not fs:
+        raise HTTPException(422, "fs required (or include it in the text block)")
+
+    try:
+        scan = run_ingest_scan(patient=patient, db=db, sweeps=sweeps,
+                               fs=float(fs), week=body.week)
+    except ValueError as exc:
+        raise HTTPException(422, detail=str(exc))
+    return _scan_to_detail(scan)
 
 
 # ── GET /api/device/status ────────────────────────────────────────────────────

@@ -42,7 +42,19 @@ from engine.fft_engine import (  # noqa: E402
     compute_half_power_bandwidth,
     compute_spectrogram,
 )
+import engine.classification as _classification  # noqa: E402
 from engine.classification import predict_healing_status  # noqa: E402
+
+# Path to the single-scan classifier bundle the continual-learning loop retrains.
+SIGNAL_MODEL_PATH = os.path.join(_ORTHO, "ml", "model.pkl")
+
+
+def reset_signal_model_cache() -> None:
+    """Null the cached single-scan model so the next prediction reloads
+    model.pkl from disk. Called after a champion/challenger promotion swaps the
+    active bundle, so the new model goes live with no server restart (assumes a
+    single worker process)."""
+    _classification._model_cache = None
 from engine.clinical_metrics import (  # noqa: E402
     classify_healing,
     compute_rust,
@@ -93,6 +105,8 @@ __all__ = [
     "compute_half_power_bandwidth",
     "compute_spectrogram",
     "predict_healing_status",
+    "SIGNAL_MODEL_PATH",
+    "reset_signal_model_cache",
     "classify_healing",
     "compute_rust",
     "compute_rust_cortex_scores",

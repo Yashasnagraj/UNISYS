@@ -7,6 +7,7 @@
 import {
   buildScan,
   callusToFrequency,
+  computeRust,
   type ScanShape,
   type ScanParams,
 } from "./scan";
@@ -43,7 +44,15 @@ export function adaptApiScan(s: ApiScanDetail): ScanShape {
   const shape = buildScan(params);
 
   // Override computed values with exact API values so numbers are accurate.
-  if (s.tsiPct != null) shape.metrics.tsi = s.tsiPct;
+  if (s.tsiPct != null) {
+    shape.metrics.tsi = s.tsiPct;
+    // Derive RUST from the REAL TSI — otherwise it's left at the value buildScan
+    // computed from a frequency→callus inversion that breaks in the device domain
+    // (low f_healthy), producing a 12/12 RUST that contradicts a low-TSI verdict.
+    const r = computeRust(s.tsiPct);
+    shape.metrics.rust = r.total;
+    shape.metrics.rustCortex = r.cortex;
+  }
   if (s.trafficLight) {
     shape.metrics.trafficLight = s.trafficLight as "green" | "amber" | "red";
   }
@@ -57,6 +66,9 @@ export function adaptApiScan(s: ApiScanDetail): ScanShape {
   if (s.zeta != null) shape.metrics.zeta = s.zeta;
   if (s.qFactor != null) shape.metrics.qFactor = s.qFactor;
   if (s.bandwidthHz != null) shape.metrics.bandwidthHz = s.bandwidthHz;
+  // Show the REAL measured resonant frequency (not the reconstructed one), so
+  // the raw reading that changes with conditions (bed/table/hand) is visible.
+  shape.metrics.fn = fPeak;
   shape.peakHz = fPeak;
 
   return shape;

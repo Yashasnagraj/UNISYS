@@ -25,7 +25,7 @@ from dataclasses import dataclass, field, asdict
 from typing import Optional
 
 import numpy as np
-from scipy.signal import detrend as _sp_detrend, butter, sosfiltfilt
+from scipy.signal import detrend as _sp_detrend, butter, sosfiltfilt, iirnotch, filtfilt
 
 from app.engine_bridge import compute_psd, detect_peaks, compute_half_power_bandwidth
 from app.services.tsi import compute_tsi_squared
@@ -48,6 +48,10 @@ class NormConfig:
     # peak search window (Hz) — kept wide; band-pass already constrains content
     peak_lo_hz: float = 100.0
     peak_hi_hz: float = 1300.0
+    # Comb-notch mains interference at multiples of this Hz (0 = off). Real
+    # captures are dominated by 50 Hz power-line hum + harmonics; notching them
+    # is required before any peak is trustworthy.
+    mains_notch_hz: float = 0.0
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -76,6 +80,25 @@ def bandpass(sig: np.ndarray, fs: float, lo: float, hi: float, order: int = 4) -
         return np.asarray(sig, dtype=float)
     sos = butter(order, [lo_n, hi_n], btype="bandpass", output="sos")
     return sosfiltfilt(sos, np.asarray(sig, dtype=float))
+
+
+def mains_notch(sig: np.ndarray, fs: float, base_hz: float, q: float = 30.0) -> np.ndarray:
+    """Comb-notch power-line interference at base_hz and every harmonic up to
+    Nyquist. Real cheap-sensor captures are dominated by 50 Hz mains + harmonics
+    (50, 100, 150, ...) which otherwise masquerade as the resonant peak."""
+    out = np.asarray(sig, dtype=float)
+    if base_hz <= 0:
+        return out
+    nyq = fs / 2.0
+    f0 = base_hz
+    while f0 < nyq - 1.0:
+        try:
+            b, a = iirnotch(f0, Q=q, fs=fs)
+            out = filtfilt(b, a, out)
+        except Exception:
+            pass
+        f0 += base_hz
+    return out
 
 
 def zscore(sig: np.ndarray) -> np.ndarray:
@@ -171,6 +194,13 @@ def _clean_one(sig: np.ndarray, fs: float, cfg: NormConfig,
         if snapshots is not None:
             snapshots.append(StageSnapshot("detrended", "Removed DC / baseline drift",
                                            _downsample(out)))
+    if getattr(cfg, "mains_notch_hz", 0.0):
+        out = mains_notch(out, fs, cfg.mains_notch_hz)
+        if snapshots is not None:
+            snapshots.append(StageSnapshot(
+                "mains_notched",
+                f"Notched {cfg.mains_notch_hz:.0f} Hz mains + harmonics",
+                _downsample(out)))
     if cfg.bandpass:
         out = bandpass(out, fs, cfg.band_low_hz, cfg.band_high_hz, cfg.bp_order)
         if snapshots is not None:

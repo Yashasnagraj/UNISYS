@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Activity, TrendingUp, Sparkles, Layers, FileText, HeartPulse } from "lucide-react";
+import { Activity, TrendingUp, Sparkles, Layers, FileText, HeartPulse, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TabDef {
@@ -12,16 +12,17 @@ interface TabDef {
 }
 
 const TABS: TabDef[] = [
-  { key: "scan",          label: "Scan",          icon: Activity   },
+  { key: "scan",          label: "Scan",           icon: Activity   },
   { key: "normalization", label: "Normalization",  icon: Layers,      requiresScan: true },
   { key: "status",        label: "Status",         icon: HeartPulse,  requiresScan: true },
+  { key: "graph",         label: "Knowledge Graph", icon: Share2,     requiresScan: true },
   { key: "report",        label: "Report",         icon: FileText,    requiresScan: true },
   { key: "trend",         label: "Trend",          icon: TrendingUp   },
   { key: "model",         label: "Model",          icon: Sparkles     },
 ];
 
 // All tabs are fully built now.
-const AVAILABLE = new Set(["scan", "normalization", "status", "report", "trend", "model"]);
+const AVAILABLE = new Set(["scan", "normalization", "status", "graph", "report", "trend", "model"]);
 
 interface Props {
   rightSlot?: React.ReactNode;

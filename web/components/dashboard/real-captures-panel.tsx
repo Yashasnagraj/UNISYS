@@ -7,22 +7,66 @@
  * SIMULATED captures ("DEMO DATA"), clearly labelled. Same layout for all three:
  * the per-press jitter (the cheap-sensor problem), the best clean resonance, and
  * the normalization story.
+ *
+ * When `scanSignal` changes (a scan was run), the panel shows a 5-second
+ * "capturing…" state and then appends a fresh capture row — so pressing Run scan
+ * visibly takes a reading and adds it to the log.
  */
 
-import { Fragment } from "react";
-import { Radio, Activity } from "lucide-react";
-import { getDeviceData } from "@/lib/real-captures";
+import { Fragment, useEffect, useRef, useState } from "react";
+import { Radio, Activity, Loader2 } from "lucide-react";
+import { getDeviceData, type RealCapture } from "@/lib/real-captures";
 import { InfoTip } from "@/components/ui/info-tip";
 
 interface Props {
   patientCode: string;
+  /** Increments when a scan is run; triggers a new capture row after ~5 s. */
+  scanSignal?: number;
 }
 
-export function RealCapturesPanel({ patientCode }: Props) {
+const CAPTURE_DELAY_MS = 5000;
+
+/** Generate a believable device reading with natural per-press variation. */
+function genCapture(press: number): RealCapture {
+  const good = Math.random() > 0.25; // most presses land a clean resonance
+  return {
+    press,
+    fPeakHz: good ? 135 + Math.random() * 28 : 60 + Math.random() * 55,
+    qFactor: good ? 42 + Math.random() * 45 : 2 + Math.random() * 18,
+    zeta: good ? 0.004 + Math.random() * 0.010 : 0.02 + Math.random() * 0.25,
+    snrDb: good ? 13 + Math.random() * 8 : 3 + Math.random() * 7,
+  };
+}
+
+export function RealCapturesPanel({ patientCode, scanSignal = 0 }: Props) {
   const d = getDeviceData(patientCode);
+  const [extra, setExtra] = useState<RealCapture[]>([]);
+  const [capturing, setCapturing] = useState(false);
+  const lastSignal = useRef(0);
+
+  useEffect(() => {
+    if (!d) return;
+    // Real hardware exhibit stays frozen to its genuine captured rows — we never
+    // fabricate a new "live" reading on a button press. Simulated demo patients
+    // (clearly labelled) may append a synthetic row to animate the flow.
+    if (d.isReal) return;
+    if (scanSignal <= 0 || scanSignal === lastSignal.current) return;
+    lastSignal.current = scanSignal;
+    setCapturing(true);
+    const t = setTimeout(() => {
+      setExtra((prev) => [...prev, genCapture(d.captures.length + prev.length + 1)]);
+      setCapturing(false);
+    }, CAPTURE_DELAY_MS);
+    return () => clearTimeout(t);
+  }, [scanSignal, d]);
+
   if (!d) return null;
 
-  const fPeaks = d.captures.map((c) => c.fPeakHz);
+  const captures = [...d.captures, ...extra];
+  const best = captures.reduce((a, b) => (b.qFactor > a.qFactor ? b : a), captures[0]);
+  const newestPress = extra.length ? d.captures.length + extra.length : -1;
+
+  const fPeaks = captures.map((c) => c.fPeakHz);
   const lo = Math.min(...fPeaks);
   const hi = Math.max(...fPeaks);
   const spreadPct = Math.round(((hi - lo) / ((hi + lo) / 2)) * 100);
@@ -47,7 +91,14 @@ export function RealCapturesPanel({ patientCode }: Props) {
             {d.isReal ? "live hardware" : "demo data"}
           </span>
         </div>
-        <span className="font-mono text-[11px] text-text-faint">{d.device}</span>
+        <span className="flex items-center gap-2 font-mono text-[11px] text-text-faint">
+          {capturing && (
+            <span className="flex items-center gap-1" style={{ color: accent }}>
+              <Loader2 size={11} className="animate-spin" /> capturing…
+            </span>
+          )}
+          {d.device}
+        </span>
       </div>
 
       {/* Capture rows */}
@@ -59,35 +110,46 @@ export function RealCapturesPanel({ patientCode }: Props) {
           <div className="flex items-center justify-end gap-1 text-[10px] uppercase tracking-wide text-text-faint">ζ damping <InfoTip k="zeta" side="bottom" /></div>
           <div className="flex items-center justify-end gap-1 text-[10px] uppercase tracking-wide text-text-faint">SNR (dB) <InfoTip k="snr" side="bottom" /></div>
 
-          {d.captures.map((c) => {
-            const isBest = c.press === d.best.press;
+          {captures.map((c) => {
+            const isBest = c.press === best.press;
+            const isNew = c.press === newestPress;
+            const nameColor = isBest ? accent : "var(--text)";
             return (
               <Fragment key={c.press}>
-                <div className="font-mono text-text-muted flex items-center gap-1.5">
+                <div className="font-mono text-text-muted flex items-center gap-1.5"
+                  style={isNew ? { color: accent } : undefined}>
                   {isBest && <Activity size={11} style={{ color: accent }} />}
-                  #{c.press}
+                  #{c.press}{isNew && <span className="text-[9px] uppercase">new</span>}
                 </div>
-                <div className="font-mono text-right" style={{ color: isBest ? accent : "var(--text)" }}>
-                  {c.fPeakHz.toFixed(1)}
-                </div>
-                <div className="font-mono text-right" style={{ color: isBest ? accent : "var(--text-muted)" }}>
-                  {c.qFactor.toFixed(1)}
-                </div>
+                <div className="font-mono text-right" style={{ color: nameColor }}>{c.fPeakHz.toFixed(1)}</div>
+                <div className="font-mono text-right" style={{ color: isBest ? accent : "var(--text-muted)" }}>{c.qFactor.toFixed(1)}</div>
                 <div className="font-mono text-right text-text-muted">{c.zeta.toFixed(4)}</div>
                 <div className="font-mono text-right text-text-muted">{c.snrDb.toFixed(1)}</div>
               </Fragment>
             );
           })}
+
+          {/* live "capturing…" placeholder row */}
+          {capturing && (
+            <>
+              <div className="font-mono flex items-center gap-1.5" style={{ color: accent }}>
+                <Loader2 size={11} className="animate-spin" /> #{captures.length + 1}
+              </div>
+              <div className="col-span-4 text-[11px] text-text-faint">
+                vibrating bone &amp; reading accelerometer…
+              </div>
+            </>
+          )}
         </div>
 
         {/* Best capture callout */}
         <div className="mb-3 flex items-center gap-3 rounded-lg border border-line px-3 py-2" style={{ background: tintBg }}>
           <Activity size={14} className="shrink-0" style={{ color: accent }} />
           <div className="text-[12px] text-text-muted">
-            <span className="text-text font-semibold">Cleanest capture: {d.best.fPeakHz.toFixed(1)} Hz</span>
-            {" "}— Q={d.best.qFactor.toFixed(1)}, SNR {d.best.snrDb.toFixed(1)} dB.
-            {d.best.qFactor >= 50 ? " A high-Q peak means the bone genuinely rang at this frequency."
-              : d.best.qFactor >= 25 ? " A moderate-Q peak — a healing but not-yet-solid bone."
+            <span className="text-text font-semibold">Cleanest capture: {best.fPeakHz.toFixed(1)} Hz</span>
+            {" "}— Q={best.qFactor.toFixed(1)}, SNR {best.snrDb.toFixed(1)} dB.
+            {best.qFactor >= 50 ? " A high-Q peak means the bone genuinely rang at this frequency."
+              : best.qFactor >= 25 ? " A moderate-Q peak — a healing but not-yet-solid bone."
               : " A low-Q, dull peak — the signature of a soft, unbridged fracture."}
           </div>
         </div>

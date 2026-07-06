@@ -45,6 +45,78 @@ const SCAN_DURATION_MS = 2200;
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
+const OUTCOME_LABELS = ["Stable", "Delayed Union", "Non-Union", "Implant Failure"] as const;
+
+/** Human-in-the-loop: clinician agrees with or overrides the ML verdict. The
+ *  confirmed label feeds the next model retrain (approved data only). */
+function VerdictFeedback({ scanId, predicted }: { scanId: number; predicted: string | null }) {
+  const [state, setState] = useState<"idle" | "overriding" | "sent">("idle");
+  const [sentLabel, setSentLabel] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function agree() {
+    setBusy(true);
+    try {
+      await api.confirmScan(scanId, { agree: true });
+      if (predicted) await api.recordOutcome(scanId, { trueLabel: predicted });
+      setSentLabel(predicted);
+      setState("sent");
+    } finally { setBusy(false); }
+  }
+
+  async function override(label: string) {
+    setBusy(true);
+    try {
+      await api.confirmScan(scanId, { agree: false, overrideLabel: label });
+      await api.recordOutcome(scanId, { trueLabel: label });
+      setSentLabel(label);
+      setState("sent");
+    } finally { setBusy(false); }
+  }
+
+  if (state === "sent") {
+    return (
+      <div className="mt-3 border-t border-line pt-2.5 text-[11px] text-text-muted">
+        <span style={{ color: "var(--accent)" }}>✓ Recorded</span> — outcome
+        &ldquo;{sentLabel}&rdquo; added to the training set for the next model update.
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3 border-t border-line pt-2.5">
+      <div className="text-[10px] uppercase tracking-[0.14em] text-text-faint">Clinician review</div>
+      {state === "idle" ? (
+        <div className="mt-1.5 flex items-center gap-2">
+          <button
+            onClick={agree} disabled={busy}
+            className="rounded-md border border-line px-2.5 py-1 text-[11px] text-text hover:border-accent hover:text-accent transition-colors disabled:opacity-50"
+          >
+            ✓ Agree
+          </button>
+          <button
+            onClick={() => setState("overriding")} disabled={busy}
+            className="rounded-md border border-line px-2.5 py-1 text-[11px] text-text-muted hover:text-text transition-colors disabled:opacity-50"
+          >
+            Override…
+          </button>
+        </div>
+      ) : (
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+          {OUTCOME_LABELS.map((l) => (
+            <button
+              key={l} onClick={() => override(l)} disabled={busy}
+              className="rounded-md border border-line px-2 py-1 text-[10.5px] text-text-muted hover:border-accent hover:text-accent transition-colors disabled:opacity-50"
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function offlineShape(patientCode: string, params?: Partial<ScanParams>): ScanShape {
   const p = getPatient(
     // map patient_code e.g. P-2611 → key arjun
@@ -82,10 +154,12 @@ export function ScanView({ patient, onScanCreated, offline }: Props) {
 
   const [progress, setProgress] = useState(0);
   const [scanning, setScanning] = useState(false);
+  const [capturing, setCapturing] = useState(false);  // true for the whole device await
   const [shape, setShape] = useState<ScanShape>(() => offlineShape(patient.patientCode));
   const [latestScan, setLatestScan] = useState<ApiScanDetail | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
-  const [scanSource, setScanSource] = useState<"device" | "sim" | "sim-fallback" | null>(null);
+  const [scanSource, setScanSource] = useState<"device" | "replay" | "sim" | "sim-fallback" | null>(null);
+  const [captureSignal, setCaptureSignal] = useState(0);  // bumps the captures panel on each scan
   const rafRef = useRef<number | null>(null);
 
   // Re-seed when patient changes
@@ -112,10 +186,18 @@ export function ScanView({ patient, onScanCreated, offline }: Props) {
   }, [latestScan, scanParams]);
 
   const pred = useMemo(() => {
+    // Live scan → anchor the healing model to the real measured (week, TSI) so
+    // days-to-walk reflects THIS reading. No scan yet → offline demo fixture.
+    if (latestScan?.tsiPct != null) {
+      return predict({
+        scans: [{ week: latestScan.week, tsiPct: latestScan.tsiPct }],
+        smoker: patient.smoker, diabetic: patient.diabetic, age: patient.age,
+      });
+    }
     const key = patient.patientCode === "P-2611" ? "arjun"
       : patient.patientCode === "P-2742" ? "priya" : "vikram";
     return predict(getPatient(key));
-  }, [patient.patientCode]);
+  }, [latestScan, patient]);
 
   const headline = predictionHeadline(pred);
   const week = latestScan?.week ?? scanParams.week;
@@ -145,38 +227,31 @@ export function ScanView({ patient, onScanCreated, offline }: Props) {
   async function runScan() {
     setScanError(null);
     startAnimation();
+    setCaptureSignal((c) => c + 1);   // tell the captures panel to take a reading
     if (offline) return;
 
-    // Try device first; fall back to sim if device is unavailable (503)
-    let result: ApiScanDetail | null = null;
+    // REAL capture only — NO silent simulation. A device request may be satisfied
+    // by the backend replaying a real captured batch (source "replay"); we reflect
+    // whatever source the API actually returns and never fabricate a live reading.
+    // On failure we surface the real reason instead of quietly faking a scan.
+    setCapturing(true);
     try {
-      result = await api.createScan({
+      const result = await api.createScan({
         source: "device",
         patientId: patient.id,
         week: scanParams.week,
-        nSweeps: 8,
+        nSweeps: 1,          // real firmware is ~28 s/sweep; one live capture
       });
-      setScanSource("device");
-    } catch {
-      // Device unavailable — run simulation through the real normalization pipeline
-      try {
-        result = await api.createScan({
-          source: "sim",
-          patientId: patient.id,
-          week: scanParams.week,
-          callusPct: scanParams.callusPct,
-          nSweeps: 8,
-        });
-        setScanSource("sim-fallback");
-      } catch (e: unknown) {
-        setScanError(e instanceof Error ? e.message : "Scan failed");
-        return;
+      setScanSource((result?.source as typeof scanSource) ?? "device");
+      if (result) {
+        setLatestScan(result);
+        onScanCreated?.(result.id, result);
       }
-    }
-
-    if (result) {
-      setLatestScan(result);
-      onScanCreated?.(result.id, result);
+    } catch (e: unknown) {
+      setScanError(e instanceof Error ? e.message : "Device unavailable");
+      setScanSource(null);
+    } finally {
+      setCapturing(false);
     }
   }
 
@@ -196,18 +271,24 @@ export function ScanView({ patient, onScanCreated, offline }: Props) {
   return (
     <div className="flex flex-col gap-6 p-6">
 
-      {/* API source badge */}
-      {/* Source badge — shows exactly where values came from */}
-      {latestScan && !offline && (
-        <div className="flex items-center gap-1.5 text-[11px]"
-          style={{ color: scanSource === "device" ? "var(--accent)" : "var(--caution)" }}>
-          {scanSource === "device" ? <Wifi size={11} /> : <WifiOff size={11} />}
-          {scanSource === "device"
-            ? `Device scan · scan #${latestScan.id} · real ADXL345 data`
-            : `Simulation · scan #${latestScan.id} · device unavailable (CS pin — re-seat wiring)`}
-          {" "}· values normalized by pipeline
-        </div>
-      )}
+      {/* Source badge — states exactly where the values came from, honestly. */}
+      {latestScan && !offline && (() => {
+        const src = latestScan.source;
+        const isReal = src === "device";        // live hardware only
+        const isReplay = src === "replay";       // real captured batch, replayed
+        const label =
+          isReal ? `Live device · ADXL345 · scan #${latestScan.id}`
+          : isReplay ? `Captured data · replayed through pipeline · scan #${latestScan.id}`
+          : `Simulation · scan #${latestScan.id} · live hardware unavailable`;
+        return (
+          <div className="flex items-center gap-1.5 text-[11px]"
+            style={{ color: isReal || isReplay ? "var(--accent)" : "var(--caution)" }}>
+            {isReal ? <Wifi size={11} /> : <WifiOff size={11} />}
+            {label}
+            {" "}· values normalized by pipeline
+          </div>
+        );
+      })()}
       {offline && (
         <div className="flex items-center gap-1.5 text-[11px] text-text-faint">
           <WifiOff size={11} /> Offline demo mode
@@ -219,9 +300,10 @@ export function ScanView({ patient, onScanCreated, offline }: Props) {
         </div>
       )}
 
-      {/* Device captures — real for Yashas, simulated for Priya/Vikram */}
+      {/* Device captures — real for Yashas, simulated for Priya/Vikram.
+          Appends a new reading ~5s after each Run scan. */}
       {hasRealCaptures(patient.patientCode) && (
-        <RealCapturesPanel patientCode={patient.patientCode} />
+        <RealCapturesPanel patientCode={patient.patientCode} scanSignal={captureSignal} />
       )}
 
       {/* TOP STRIP */}
@@ -277,8 +359,13 @@ export function ScanView({ patient, onScanCreated, offline }: Props) {
             </div>
           </div>
 
-          <Button variant="primary" size="lg" className="w-full" onClick={runScan} disabled={scanning}>
-            {scanning ? (
+          <Button variant="primary" size="lg" className="w-full" onClick={runScan} disabled={scanning || capturing}>
+            {capturing ? (
+              <>
+                <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-current" />
+                Capturing from device…
+              </>
+            ) : scanning ? (
               <>
                 <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-current" />
                 Scanning…
@@ -321,8 +408,8 @@ export function ScanView({ patient, onScanCreated, offline }: Props) {
               <div className="font-mono text-[11px] text-text-faint">
                 20–1100 Hz sweep
               </div>
-              <button onClick={runScan} disabled={scanning}
-                className="flex items-center gap-1.5 text-[12px] text-text-muted hover:text-accent transition-colors">
+              <button onClick={runScan} disabled={scanning || capturing}
+                className="flex items-center gap-1.5 text-[12px] text-text-muted hover:text-accent transition-colors disabled:opacity-50">
                 <RotateCcw size={13} /> Re-scan
               </button>
             </div>
@@ -384,6 +471,9 @@ export function ScanView({ patient, onScanCreated, offline }: Props) {
             <p className="mt-1.5 text-[12.5px] leading-relaxed text-text-muted">
               {displayShape.metrics.recommendation}
             </p>
+            {latestScan && !offline && (
+              <VerdictFeedback scanId={latestScan.id} predicted={latestScan.predictedLabel} />
+            )}
           </div>
         </aside>
       </section>

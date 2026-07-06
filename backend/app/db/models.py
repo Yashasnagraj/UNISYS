@@ -66,6 +66,74 @@ class CaptureSession(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+class RawSweepSet(SQLModel, table=True):
+    """All N raw sweeps of one capture, stored losslessly so a real capture can
+    be replayed through the pipeline later. `sweeps_b64` is a base64 float32
+    blob of a (n_sweeps, n_samples) array. Additive table — created by
+    create_all; the Scan row keeps storing only the first sweep for quick reads.
+    """
+    __tablename__ = "raw_sweep_sets"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    session_id: int = Field(foreign_key="capture_sessions.id", index=True)
+    fs_hz: float
+    n_sweeps: int
+    n_samples: int
+    sweeps_b64: str  # base64(float32 (n_sweeps, n_samples))
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ClinicianFeedback(SQLModel, table=True):
+    """A clinician's agree/override on a scan's ML verdict. `override_label` (when
+    set) is one of the four LABEL_NAMES. These feed the retrain corpus alongside
+    confirmed outcomes. Additive table."""
+    __tablename__ = "clinician_feedback"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    scan_id: int = Field(foreign_key="scans.id", index=True)
+    clinician: Optional[str] = None
+    agree: bool = True
+    override_label: Optional[str] = None   # one of LABEL_NAMES when disagreeing
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class Outcome(SQLModel, table=True):
+    """Ground-truth healing outcome for a patient/scan, confirmed by a clinician
+    (or a later follow-up). `true_label` is one of the four LABEL_NAMES. This is
+    the target the single-scan classifier learns from. Additive table."""
+    __tablename__ = "outcomes"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    patient_id: int = Field(foreign_key="patients.id", index=True)
+    scan_id: Optional[int] = Field(default=None, foreign_key="scans.id", index=True)
+    true_label: str                        # one of LABEL_NAMES
+    weeks_to_walk: Optional[float] = None
+    rust_16w: Optional[int] = None
+    source: str = "clinician"              # clinician | followup | synthetic
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ModelVersion(SQLModel, table=True):
+    """One trained version of the single-scan classifier. `macro_f1_holdout` and
+    `champion_f1` are both scored on the SAME frozen holdout, so promotion
+    (`promoted`) is an honest apples-to-apples comparison. `is_active` marks the
+    bundle currently copied to the live model path. Additive table."""
+    __tablename__ = "model_versions"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    version: int = Field(index=True)
+    path: str                              # versions/model_v{N}.pkl
+    synthetic_n: int = 0
+    clinician_pairs: int = 0
+    macro_f1_holdout: float = 0.0          # this version, on the frozen holdout
+    champion_f1: Optional[float] = None    # prior champion, same holdout (None for v1)
+    promoted: bool = False                 # did it beat/tie the champion?
+    is_active: bool = False                # currently the live model
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 class Scan(SQLModel, table=True):
     __tablename__ = "scans"
 

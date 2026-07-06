@@ -35,10 +35,32 @@ class UploadScanRequest(CamelModel):
     fs: int = 4096
 
 
+class ReplayScanRequest(CamelModel):
+    source: Literal["replay"] = "replay"
+    patient_id: int
+    week: float = 0.0
+    fixture: str                # backend/fixtures/<fixture>.json of real sweeps
+
+
 ScanRequest = Annotated[
-    Union[SimScanRequest, DeviceScanRequest, UploadScanRequest],
+    Union[SimScanRequest, DeviceScanRequest, UploadScanRequest, ReplayScanRequest],
     Field(discriminator="source"),
 ]
+
+
+# ── POST /device/ingest — the device pushes real samples over Wi-Fi ──────────
+
+class DeviceIngestRequest(CamelModel):
+    """The ESP32 posts a real capture over Wi-Fi. Provide EITHER parsed sample
+    arrays (samples / sweeps) with fs, OR the raw plain-text capture block
+    (text) which is parsed server-side (rate + dropouts handled)."""
+    patient_id: Optional[int] = None
+    patient_code: Optional[str] = None
+    week: float = 0.0
+    fs: Optional[float] = None
+    samples: Optional[list[float]] = None        # single sweep
+    sweeps: Optional[list[list[float]]] = None   # multiple sweeps
+    text: Optional[str] = None                   # raw firmware dump
 
 
 # ── Per-stage snapshot (normalization view) ──────────────────────────────────
@@ -102,6 +124,17 @@ class RepeatabilityDetail(CamelModel):
     tsi_cv_norm: float
     improvement_factor: float
     snr_gain_db: float
+
+
+# ── GET /scans/{id}/sweeps ───────────────────────────────────────────────────
+
+class RawSweepsDetail(CamelModel):
+    """The stored raw sweeps for a scan (downsampled for a raw-vs-replay viz)."""
+    scan_id: int
+    fs_hz: float
+    n_sweeps: int
+    n_samples: int
+    sweeps: list[list[float]]   # downsampled, capped for display
 
 
 # ── GET /device/status ───────────────────────────────────────────────────────

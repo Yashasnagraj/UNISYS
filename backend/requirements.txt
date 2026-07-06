@@ -8,3 +8,4 @@ pydantic>=2.6
 pydantic-settings>=2.2
 pyserial>=3.5
 python-multipart>=0.0.9
+networkx>=3.0        # in-memory knowledge graph (pure-Python, offline)

@@ -43,3 +43,8 @@ build
 # Generated SQLite database (seeded fresh on backend startup)
 *.db
 backend/resoscan.db
+
+# ResoScan continual-learning generated artifacts (not source)
+backend/ml_retrain/versions/
+backend/ml_retrain/frozen_holdout.npz
+ortho_simulator/ml/model_baseline.pkl

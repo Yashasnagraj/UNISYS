@@ -115,7 +115,7 @@ function computeTsi(fn: number, fHealthy: number): number {
 }
 
 // RUST score 4..12 derived from TSI bands (matches Streamlit's logic)
-function computeRust(tsi: number): { total: number; cortex: ClinicalMetrics["rustCortex"] } {
+export function computeRust(tsi: number): { total: number; cortex: ClinicalMetrics["rustCortex"] } {
   // Map TSI 0..100 to 4 cortex scores of 1..3
   // Each cortex: 1 = no callus, 2 = bridging, 3 = consolidated
   const s = (t: number, offset: number = 0): number => {

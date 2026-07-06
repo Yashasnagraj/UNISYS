@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Wordmark } from "@/components/brand/wordmark";
+import { Badge } from "@/components/ui/badge";
 import type { ApiPatient } from "@/lib/api";
 import { api } from "@/lib/api";
 import { PATIENTS } from "@/lib/patients"; // offline fallback
@@ -69,10 +70,16 @@ export function PatientRail() {
       setLoading(false);
       return;
     }
-    api.patients()
-      .then(setPatients)
-      .catch(() => setPatients(offlinePatients()))
-      .finally(() => setLoading(false));
+    const load = () =>
+      api.patients()
+        .then(setPatients)
+        .catch(() => setPatients(offlinePatients()))
+        .finally(() => setLoading(false));
+    load();
+    // Re-fetch whenever a scan is stored, so the live TSI % updates in the rail.
+    const onScan = () => load();
+    window.addEventListener("reso:scan-created", onScan);
+    return () => window.removeEventListener("reso:scan-created", onScan);
   }, [isOffline]);
 
   function select(code: string) {
@@ -114,54 +121,36 @@ export function PatientRail() {
               key={p.patientCode}
               onClick={() => select(p.patientCode)}
               className={cn(
-                "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors w-full",
+                "relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left w-full",
+                "transition-all duration-150",
                 active
                   ? "bg-bg-card text-text"
-                  : "text-text-muted hover:bg-bg-card hover:text-text",
+                  : "text-text-muted hover:bg-bg-elevated hover:text-text hover:translate-x-0.5",
               )}
+              style={active ? { boxShadow: "inset 2px 0 0 var(--accent)" } : undefined}
             >
-              {/* Status dot */}
-              <span
-                className="h-2 w-2 shrink-0 rounded-full"
-                style={{ background: color }}
-              />
+              {/* Status dot with ring */}
+              <span className="relative flex h-3 w-3 shrink-0 items-center justify-center">
+                <span className="absolute inset-0 rounded-full opacity-30" style={{ background: color }} />
+                <span className="h-2 w-2 rounded-full" style={{ background: color }} />
+              </span>
               {/* Name + TSI */}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
                   <span className="truncate text-[12px] font-medium leading-tight">
                     {p.name.split(" ")[0]}
                   </span>
-                  {/* Real-device vs simulation tag */}
-                  <span
-                    className="shrink-0 rounded px-1 py-px text-[8px] font-semibold uppercase tracking-wide"
-                    style={
-                      p.patientCode === "P-2611"
-                        ? { background: "rgba(0,255,170,0.15)", color: "var(--accent)" }
-                        : { background: "rgba(255,255,255,0.06)", color: "var(--text-faint)" }
-                    }
-                    title={
-                      p.patientCode === "P-2611"
-                        ? "Real device measurements (ESP32 + ADXL345)"
-                        : "Simulated patient — example trajectory"
-                    }
+                  <Badge
+                    tone={p.patientCode === "P-2611" ? "accent" : "neutral"}
+                    className="shrink-0 px-1 py-px text-[8px]"
                   >
                     {p.patientCode === "P-2611" ? "real" : "sim"}
-                  </span>
+                  </Badge>
                 </div>
-                <div
-                  className="font-mono text-[10px] leading-tight"
-                  style={{ color: tsiColor(p.latestTsi) }}
-                >
+                <div className="font-mono text-[10px] leading-tight" style={{ color: tsiColor(p.latestTsi) }}>
                   {p.latestTsi != null ? `${Math.round(p.latestTsi)}%` : "—"}
                 </div>
               </div>
-              {/* Active indicator */}
-              {active && (
-                <span
-                  className="absolute left-0 top-1 bottom-1 w-[2px] rounded-full"
-                  style={{ background: "var(--accent)" }}
-                />
-              )}
             </button>
           );
         })}

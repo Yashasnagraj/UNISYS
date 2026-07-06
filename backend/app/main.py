@@ -9,16 +9,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.db.database import init_db
 from app.engine_bridge import engine_health
-from app.routers import patients, scans
+from app.routers import graph, model, patients, scans
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
-    # seed demo patients (idempotent)
-    from app.db.seed import seed_demo_patients
+    # seed demo patients + backfill device-domain feature scans (both idempotent)
+    from app.db.seed import backfill_demo_features, seed_demo_patients
     seeded = seed_demo_patients()
+    backfilled = backfill_demo_features()
     app.state.seeded = seeded
+    app.state.backfilled = backfilled
+    # NB: the single-scan champion (v1) is established lazily on the first
+    # /api/model/retrain call — see ml_retrain.retrain.retrain_challenger — so the
+    # committed model.pkl is only swapped at that explicit moment, not on boot.
     yield
 
 
@@ -34,6 +39,8 @@ app.add_middleware(
 
 app.include_router(patients.router)
 app.include_router(scans.router)
+app.include_router(graph.router)
+app.include_router(model.router)
 
 
 @app.get("/api/health")

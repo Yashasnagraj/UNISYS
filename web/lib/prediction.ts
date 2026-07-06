@@ -13,8 +13,16 @@
  *   - confidence is high (>= 4 scans), moderate (2-3), low (1)
  */
 
-import type { Patient } from "./patients";
-import { TODAY_DATE, latestScan } from "./patients";
+import { TODAY_DATE } from "./patients";
+
+/** Minimal input predict() needs — the live API patient (or an offline fixture)
+ *  both satisfy this structurally. */
+export interface PredictInput {
+  scans: { week: number; tsiPct: number }[];
+  smoker?: boolean;
+  diabetic?: boolean;
+  age?: number;
+}
 
 export const TSI_TARGET = 80.0;
 export const PRIOR_K = 0.45;
@@ -133,23 +141,43 @@ function addDays(iso: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-/** Predict days-to-walk for a patient. */
-export function predict(p: Patient, today: Date = TODAY_DATE): Prediction {
+/** Solve for t0 so the Gompertz curve at pace k passes exactly through the
+ *  measured (week, tsi) point — anchors a single-scan projection to the real
+ *  reading instead of falling back to a generic prior curve. */
+function anchorT0(week: number, tsi: number, k: number): number {
+  const t = Math.min(99.5, Math.max(0.5, tsi));
+  const inner = -Math.log(t / 100);          // > 0 for tsi < 100
+  if (inner <= 0 || k <= 0) return week;      // already at/above target
+  return week + Math.log(inner) / k;
+}
+
+/** Predict days-to-walk for a patient (live API patient or offline fixture). */
+export function predict(p: PredictInput, today: Date = TODAY_DATE): Prediction {
   const weeks = p.scans.map((s) => s.week);
   const tsis  = p.scans.map((s) => s.tsiPct);
 
-  const kSeed = demographicKPrior({ smoker: p.smoker, diabetic: p.diabetic, age: p.age });
-  const { k, t0 } = weeks.length >= 2
-    ? fitGompertz(weeks, tsis, kSeed, PRIOR_T0)
-    : { k: kSeed, t0: PRIOR_T0 };
-
-  const confidence: Confidence =
-    weeks.length >= 4 ? "high" : weeks.length >= 2 ? "moderate" : "low";
-
-  const weeksToTarget = gompertzInverse(TSI_TARGET, k, t0);
-  const last = latestScan(p);
+  const last = p.scans[p.scans.length - 1];
   const currentTsi = last.tsiPct;
   const currentWeek = last.week;
+
+  const kSeed = demographicKPrior({ smoker: p.smoker, diabetic: p.diabetic, age: p.age });
+
+  // Fit a trajectory only with >= 2 DISTINCT weeks; otherwise anchor the
+  // demographic-pace curve through the single measured point, so one real scan
+  // still yields a projection tied to the actual reading (not a generic curve).
+  const distinctWeeks = new Set(weeks.map((w) => Math.round(w * 10))).size;
+  let k: number, t0: number;
+  if (distinctWeeks >= 2) {
+    ({ k, t0 } = fitGompertz(weeks, tsis, kSeed, PRIOR_T0));
+  } else {
+    k = kSeed;
+    t0 = anchorT0(currentWeek, currentTsi, kSeed);
+  }
+
+  const confidence: Confidence =
+    distinctWeeks >= 4 ? "high" : distinctWeeks >= 2 ? "moderate" : "low";
+
+  const weeksToTarget = gompertzInverse(TSI_TARGET, k, t0);
   const todayIso = today.toISOString().slice(0, 10);
 
   let weeksRemaining: number | null;
